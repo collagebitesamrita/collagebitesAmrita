@@ -1,0 +1,142 @@
+# College Bites — running the app
+
+A short guide for the College Bites team. The site is
+**https://collegebitessrm.vercel.app** — it works in any phone browser and
+can be added to the home screen like an app.
+
+---
+
+## Getting into admin
+
+1. Sign in on the site with Google, using an **admin account**
+   (today: collegebitessrm@gmail.com and nagaadithya999@gmail.com).
+2. Open **https://collegebitessrm.vercel.app/admin**.
+3. Enter the **admin passcode** (ask the developer; it is never written
+   down in the app or sent in chat).
+
+A new admin account can only be added by the developer.
+
+### Install the admin app (optional)
+
+Put admin on your phone's home screen as its own app, **CB Admin** — it
+opens straight on the dashboard, full screen, separate from the student
+app.
+
+- **Android (Chrome):** on the dashboard, tap the **phone icon** (Install)
+  at the top, then **Install**.
+- **iPhone:** open the dashboard in **Safari**, tap the phone icon to see
+  the steps: **Share** → **Add to Home Screen** → **Add**.
+
+The button disappears once it's installed (or on a browser that can't
+install apps). You still sign in and enter the passcode the first time.
+
+## Every day
+
+### Open or close ordering
+
+The big coloured **Today** card at the top of admin has an
+**Open / Closed** switch.
+
+- **Open** — students can order from every restaurant that's turned on.
+  It stays open until you close it; there is no automatic schedule.
+- **Closed** — nobody can place a new order, and **every restaurant is
+  turned off**. Orders already placed are not affected.
+- After re-opening, turn on the restaurants you want under **Restaurants**
+  (tapping **Turn on** while ordering is closed offers to re-open it).
+
+### New orders
+
+- Tap **Turn on alerts** (the bell) once on each phone: you'll get a
+  **push notification** for every new order, even with the page closed.
+- While the admin page is open, a **loud alarm** plays for every new
+  order. Browsers only allow sound after a tap, so each time you open
+  admin, tap **Tap to arm sound** until the button says **Alerts on**.
+
+### Handling an order
+
+Each order card shows the **token number** (e.g. #12 — the student shows
+this at the gate), the restaurant, each dish with quantity and price, the
+student's note, name and number.
+
+1. **WhatsApp** — opens a chat with the student with the order already
+   typed out. Ask them to reply "yes".
+2. **Confirm** — once they've confirmed. The student gets a notification.
+3. **Copy** — copies the student's number and name (on top), then the
+   restaurant and dishes, to paste to the restaurant. For **Triangle Food Court** and **Local Home Kitchen** each
+   dish also has its price, with a total when there's more than one dish;
+   Biryani Nation's copy has no prices.
+4. **Mark delivered** — once they've collected it at **Gate 3**.
+5. **Cancel** — if it can't go ahead. The student is notified.
+
+**Mark all delivered** marks every confirmed order delivered at once.
+
+Tap any card for the full details page (phone, email, registration
+number, timings).
+
+### Delivery times the students see
+
+- **Triangle Food Court** and **Local Home Kitchen**: delivery within
+  **40 minutes** of ordering.
+- **Clg Bites Biryani Nation**: within **1 hour**.
+
+The ticket shows "Delivery by" that time. To change these times, ask the
+developer.
+
+### Offers (discounts)
+
+Tap **Offers** on the admin page (next to **Sold out**; it shows "2 on"
+while offers are running). **Every offer is for Clg Bites Biryani Nation
+orders only** — other restaurants' carts show them greyed out. The Offers
+page has three switches:
+
+- **10% off** — 10% off the whole Biryani Nation order.
+- **20% off** — 20% off the whole Biryani Nation order.
+- **Buy 3 Full biryanis, get 1 Single free** — for every 3 Full biryanis
+  in one order, the student picks one Single biryani free. They pay the
+  full price of the Full biryanis; the Single costs nothing.
+
+Turn on any you like; they take effect straight away. Students see an
+**Apply discount** bar in their cart and pick **one offer per order**.
+Turn a switch off to end that offer. Orders already placed keep their
+discount.
+
+Order cards show the offer and its saving (e.g. "10% off −₹42") and mark
+free biryanis "Free", and the WhatsApp and copy text say "(free)", so the
+restaurant knows not to charge for them. The total shown is what the
+student pays.
+
+## When something changes
+
+| You want to… | Do this |
+|---|---|
+| Stop one restaurant for a while | **Restaurants** → **Turn off** (turn it on again later) |
+| Mark a dish as sold out | **Sold out** → find the dish → **Sold out** (tap **Back on sale** to bring it back) |
+| Block someone who keeps not collecting | **Users** → **Banned users** → search them → **Ban** → **Ban student** (tap **Unban** to undo). This blocks their **phone number**, so a new Google account with the same number is blocked too. |
+| See every past order | **Order history** (with filters and "Export to Excel") |
+| Read ratings | **Reviews** — dish averages and notes; only admins ever see these |
+| Hand over a free biryani | A student who unlocks all 6 milestones messages you on WhatsApp. After handing it over: **Users** → filter "Free biryani earned" → **Mark claimed** (there's an Undo) |
+| Change prices, add or rename dishes or restaurants | Ask the developer — menu changes are made in the database |
+
+## Payments
+
+Pay on delivery — students pay by cash or UPI when they collect at Gate 3.
+The app itself never takes payments.
+
+## Support details students see
+
+- Call / WhatsApp: **+91 99899 55833**
+- **WhatsApp channel** (offers, open / closed, new dishes):
+  https://whatsapp.com/channel/0029VbDNWZPHrDZaWYZTjK21 — students find it
+  from the WhatsApp button at the top of Home (it has a dot until they open
+  it), a card on Profile and the About popup (tap the logo). Post offers
+  and "we're open" there. If the channel link ever changes, ask the
+  developer to update it.
+- Email (privacy page): **collegebitessrm@gmail.com**
+
+## If something looks wrong
+
+- Pull down to refresh, or tap **Reload** in the admin header.
+- A page that says "Token #404" (with a little scooter lost on the road) is
+  just a wrong link.
+- Anything else: contact the developer with a screenshot and what you
+  tapped.

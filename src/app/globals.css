@@ -1,0 +1,472 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Zomato-style clean design: white backgrounds, red accents, black text.
+ * Minimal, professional food-delivery aesthetic.
+ */
+@theme {
+ /* Primary palette — Orange */
+ --color-red-100: #fff0e6;
+ --color-red-300: #ffb899;
+ --color-red-500: #ff6b35;
+ --color-red-700: #cc5528;
+ --color-red-900: #803519;
+
+ /* Neutral greys */
+ --color-grey-100: #f8f8f8;
+ --color-grey-300: #e8e8e8;
+ --color-grey-500: #9c9c9c;
+ --color-grey-700: #696969;
+ --color-grey-900: #1c1c1c;
+
+ /* Success green (veg, delivered) */
+ --color-green-100: #e8f5e3;
+ --color-green-300: #a8d89e;
+ --color-green-500: #60a756;
+ --color-green-700: #4d8645;
+ --color-green-900: #2e5029;
+}
+
+/*
+ * Type scale — Poppins for display text, Inter for body.
+ */
+@theme {
+ --text-display: clamp(2rem, 10vw, 2.5rem);
+ --text-display--line-height: 1.08;
+ --text-display--letter-spacing: -0.03em;
+ --text-headline: 1.75rem;
+ --text-headline--line-height: 1.15;
+ --text-headline--letter-spacing: -0.02em;
+ --text-title: 1.3125rem;
+ --text-title--line-height: 1.25;
+ --text-title--letter-spacing: -0.015em;
+ --text-label: 0.8125rem;
+ --text-label--line-height: 1.125rem;
+ --text-label--font-weight: 600;
+}
+
+/*
+ * Motion tokens — keep functional, remove decorative.
+ */
+@theme {
+ --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+ --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+ --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+}
+
+:root {
+ --dur-press: 120ms;
+ --dur-quick: 180ms;
+ --dur-base: 240ms;
+ --dur-slow: 400ms;
+}
+
+@theme inline {
+ --color-background: var(--background);
+ --color-foreground: var(--foreground);
+ --font-sans: var(--font-inter);
+ --font-heading: var(--font-poppins), var(--font-inter);
+ --color-scrim: var(--scrim);
+ --color-chip-active: var(--chip-active);
+ --color-chip-active-foreground: var(--chip-active-foreground);
+ --color-success: var(--success);
+ --color-success-foreground: var(--success-foreground);
+ --color-success-soft: var(--success-soft);
+ --color-sidebar-ring: var(--sidebar-ring);
+ --color-sidebar-border: var(--sidebar-border);
+ --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+ --color-sidebar-accent: var(--sidebar-accent);
+ --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+ --color-sidebar-primary: var(--sidebar-primary);
+ --color-sidebar-foreground: var(--sidebar-foreground);
+ --color-sidebar: var(--sidebar);
+ --color-chart-5: var(--chart-5);
+ --color-chart-4: var(--chart-4);
+ --color-chart-3: var(--chart-3);
+ --color-chart-2: var(--chart-2);
+ --color-chart-1: var(--chart-1);
+ --color-ring: var(--ring);
+ --color-input: var(--input);
+ --color-border: var(--border);
+ --color-destructive: var(--destructive);
+ --color-destructive-foreground: var(--destructive-foreground);
+ --color-accent-foreground: var(--accent-foreground);
+ --color-accent: var(--accent);
+ --color-muted-foreground: var(--muted-foreground);
+ --color-muted: var(--muted);
+ --color-secondary-foreground: var(--secondary-foreground);
+ --color-secondary: var(--secondary);
+ --color-primary-foreground: var(--primary-foreground);
+ --color-primary: var(--primary);
+ --color-popover-foreground: var(--popover-foreground);
+ --color-popover: var(--popover);
+ --color-card-foreground: var(--card-foreground);
+ --color-card: var(--card);
+ --shadow-card: var(--elevation-card);
+ --shadow-raised: var(--elevation-raised);
+ --shadow-overlay: var(--elevation-overlay);
+ --radius-sm: calc(var(--radius) * 0.6);
+ --radius-md: calc(var(--radius) * 0.8);
+ --radius-lg: var(--radius);
+ --radius-xl: calc(var(--radius) * 1.4);
+ --radius-2xl: calc(var(--radius) * 1.8);
+ --radius-3xl: calc(var(--radius) * 2.2);
+ --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Light mode — clean white with red accents.
+ */
+:root {
+ --background: #ffffff;
+ --foreground: #1c1c1c;
+ --card: #ffffff;
+ --card-foreground: #1c1c1c;
+ --popover: #ffffff;
+ --popover-foreground: #1c1c1c;
+ --primary: #ff6b35;
+ --primary-foreground: #ffffff;
+ --secondary: #f8f8f8;
+ --secondary-foreground: #1c1c1c;
+ --muted: #f8f8f8;
+ --muted-foreground: #696969;
+ --accent: #f8f8f8;
+ --accent-foreground: #1c1c1c;
+ --destructive: #ff6b35;
+ --destructive-foreground: #ffffff;
+ --border: #ebebeb;
+ --input: #d4d4d4;
+ --ring: #ff6b35;
+ --chip-active: #ff6b35;
+ --chip-active-foreground: #ffffff;
+ --success: #60a756;
+ --success-foreground: #ffffff;
+ --success-soft: #e8f5e3;
+ --chart-1: #ff6b35;
+ --chart-2: #60a756;
+ --chart-3: #f5a3ab;
+ --chart-4: #9c9c9c;
+ --chart-5: #1c1c1c;
+ --radius: 0.75rem;
+ --sidebar: #ffffff;
+ --sidebar-foreground: #1c1c1c;
+ --sidebar-primary: #ff6b35;
+ --sidebar-primary-foreground: #ffffff;
+ --sidebar-accent: #f8f8f8;
+ --sidebar-accent-foreground: #1c1c1c;
+ --sidebar-border: #ebebeb;
+ --sidebar-ring: #ff6b35;
+
+ /* Clean, neutral shadows */
+ --elevation-card: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+ --elevation-raised: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+ --elevation-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+
+ --scrim: #1c1c1c;
+}
+
+/*
+ * Dark mode — dark grey backgrounds, red accents.
+ */
+.dark {
+ --background: #1c1c1c;
+ --foreground: #f8f8f8;
+ --card: #2c2c2c;
+ --card-foreground: #f8f8f8;
+ --popover: #2c2c2c;
+ --popover-foreground: #f8f8f8;
+ --primary: #ff6b35;
+ --primary-foreground: #ffffff;
+ --secondary: #3c3c3c;
+ --secondary-foreground: #f8f8f8;
+ --muted: #3c3c3c;
+ --muted-foreground: #9c9c9c;
+ --accent: #3c3c3c;
+ --accent-foreground: #f8f8f8;
+ --destructive: #ff6b35;
+ --destructive-foreground: #ffffff;
+ --border: #3c3c3c;
+ --input: #4c4c4c;
+ --ring: #ff6b35;
+ --chip-active: #ff6b35;
+ --chip-active-foreground: #ffffff;
+ --success: #60a756;
+ --success-foreground: #ffffff;
+ --success-soft: #2e5029;
+ --chart-1: #ff6b35;
+ --chart-2: #60a756;
+ --chart-3: #f5a3ab;
+ --chart-4: #9c9c9c;
+ --chart-5: #f8f8f8;
+ --sidebar: #2c2c2c;
+ --sidebar-foreground: #f8f8f8;
+ --sidebar-primary: #ff6b35;
+ --sidebar-primary-foreground: #ffffff;
+ --sidebar-accent: #3c3c3c;
+ --sidebar-accent-foreground: #f8f8f8;
+ --sidebar-border: #3c3c3c;
+ --sidebar-ring: #ff6b35;
+
+ --elevation-card: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+ --elevation-raised: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+ --elevation-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+
+ --scrim: #000000;
+}
+
+/*
+ * Functional animations — keep these, remove decorative ones.
+ */
+@layer base {
+ * {
+ @apply border-border outline-ring/80;
+ }
+ body {
+ @apply bg-background text-foreground;
+ }
+ html {
+ @apply font-sans;
+ }
+ .font-heading {
+ font-variant-numeric: lining-nums tabular-nums;
+ }
+}
+
+/*
+ * Tactile press feedback — keep this.
+ */
+@media (prefers-reduced-motion: no-preference) {
+ button:not(:disabled):not([aria-haspopup]),
+ .pressable {
+ transition-property: transform, translate, scale, rotate, color, background-color, border-color, box-shadow, opacity, filter;
+ transition-duration: var(--dur-press);
+ transition-timing-function: ease-out;
+ }
+ button:not(:disabled):not([aria-haspopup]):active,
+ .pressable:active {
+ transform: scale(0.97);
+ }
+}
+
+/*
+ * Functional animations — simplified.
+ */
+@media (prefers-reduced-motion: no-preference) {
+ .animate-pop-in {
+ animation: pop-in var(--dur-quick) var(--ease-spring) both;
+ }
+ .animate-bounce-count {
+ animation: bounce-count var(--dur-base) var(--ease-spring);
+ }
+ .animate-slide-up-in {
+ animation: slide-up-in var(--dur-base) var(--ease-out-expo) both;
+ }
+ .animate-toast-in {
+ animation: toast-in var(--dur-base) var(--ease-out-expo) both;
+ }
+ .animate-overlay-in {
+ animation: overlay-in var(--dur-base) var(--ease-out-expo) both;
+ }
+ .animate-overlay-out {
+ animation: overlay-out var(--dur-base) var(--ease-in-quad) both;
+ }
+ .animate-tab-pop {
+ animation: tab-pop var(--dur-slow) var(--ease-spring) both;
+ }
+ .animate-tab-stretch {
+ animation: tab-stretch var(--dur-slow) var(--ease-out-expo) both;
+ }
+}
+
+@keyframes pop-in {
+ from {
+ opacity: 0;
+ transform: scale(0.85);
+ }
+ to {
+ opacity: 1;
+ transform: scale(1);
+ }
+}
+
+@keyframes bounce-count {
+ 0% {
+ transform: scale(1);
+ }
+ 40% {
+ transform: scale(1.22);
+ }
+ 100% {
+ transform: scale(1);
+ }
+}
+
+@keyframes slide-up-in {
+ from {
+ opacity: 0;
+ transform: translateY(16px);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0);
+ }
+}
+
+@keyframes toast-in {
+ from {
+ opacity: 0;
+ transform: translateY(-12px) scale(0.96);
+ }
+ to {
+ opacity: 1;
+ transform: translateY(0) scale(1);
+ }
+}
+
+@keyframes overlay-in {
+ from {
+ opacity: 0;
+ }
+ to {
+ opacity: 1;
+ }
+}
+
+@keyframes overlay-out {
+ from {
+ opacity: 1;
+ }
+ to {
+ opacity: 0;
+ }
+}
+
+@keyframes tab-pop {
+ 0% {
+ transform: scale(0.6) rotate(-14deg);
+ }
+ 60% {
+ transform: scale(1.14) rotate(4deg);
+ }
+ 100% {
+ transform: none;
+ }
+}
+
+@keyframes tab-stretch {
+ 0% {
+ transform: scaleX(1.16) scaleY(0.88);
+ }
+ 100% {
+ transform: none;
+ }
+}
+
+/*
+ * View transitions — keep functional.
+ */
+:root {
+ --vt-duration-exit: 150ms;
+ --vt-duration-enter: 210ms;
+ --vt-duration-move: 400ms;
+}
+
+::view-transition {
+ pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+ ::view-transition-old(*),
+ ::view-transition-new(*),
+ ::view-transition-group(*) {
+ animation-duration: 0s !important;
+ animation-delay: 0s !important;
+ }
+}
+
+@keyframes vt-fade {
+ from {
+ filter: blur(3px);
+ opacity: 0;
+ }
+ to {
+ filter: blur(0);
+ opacity: 1;
+ }
+}
+
+::view-transition-old(.nav-forward) {
+ --vt-slide-offset: -60px;
+ animation:
+ var(--vt-duration-exit) ease-in both vt-fade reverse,
+ var(--vt-duration-move) ease-in-out both vt-slide reverse;
+}
+::view-transition-new(.nav-forward) {
+ --vt-slide-offset: 60px;
+ animation:
+ var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade,
+ var(--vt-duration-move) ease-in-out both vt-slide;
+}
+
+::view-transition-old(.nav-back) {
+ --vt-slide-offset: 60px;
+ animation:
+ var(--vt-duration-exit) ease-in both vt-fade reverse,
+ var(--vt-duration-move) ease-in-out both vt-slide reverse;
+}
+::view-transition-new(.nav-back) {
+ --vt-slide-offset: -60px;
+ animation:
+ var(--vt-duration-enter) ease-out var(--vt-duration-exit) both vt-fade,
+ var(--vt-duration-move) ease-in-out both vt-slide;
+}
+
+@keyframes vt-slide {
+ from {
+ translate: var(--vt-slide-offset);
+ }
+ to {
+ translate: 0;
+ }
+}
+
+/*
+ * Loading transitions.
+ */
+::view-transition-old(.slide-down) {
+ animation:
+ var(--vt-duration-exit) ease-out both vt-fade reverse,
+ var(--vt-duration-exit) ease-out both vt-slide-y reverse;
+}
+::view-transition-new(.slide-up) {
+ animation:
+ var(--vt-duration-enter) ease-in var(--vt-duration-exit) both vt-fade,
+ var(--vt-duration-move) ease-in both vt-slide-y;
+}
+
+@keyframes vt-slide-y {
+ from {
+ transform: translateY(10px);
+ }
+ to {
+ transform: translateY(0);
+ }
+}
+
+/*
+ * Reduced motion safety net.
+ */
+@media (prefers-reduced-motion: reduce) {
+ *:not(.animate-spin),
+ *::before,
+ *::after {
+ animation-duration: 0.01ms !important;
+ animation-iteration-count: 1 !important;
+ transition-duration: 0.01ms !important;
+ scroll-behavior: auto !important;
+ }
+}

@@ -1,0 +1,189 @@
+import type { Metadata } from "next";
+import { ViewTransition } from "react";
+import { ChannelCard } from "@/components/channel/channel-card";
+import { IconTile } from "@/components/icon-tile";
+import { Bell, Lock, Mail, MapPin, Palette, Pepper, Sun, Volume2 } from "@/components/icons";
+import { LikedDishes } from "@/components/profile/liked-dishes";
+import { MemberCard } from "@/components/profile/member-card";
+import { getUnlockedMilestones, MilestoneBadges } from "@/components/profile/milestone-badges";
+import { MilestoneUnlockWatcher } from "@/components/profile/milestone-unlock-watcher";
+import { NotificationToggle } from "@/components/notifications/notification-toggle";
+import { SoundToggle } from "@/components/profile/sound-toggle";
+import { SupportCard } from "@/components/profile/support-card";
+import { WeeklyRankBadge } from "@/components/profile/weekly-rank-badge";
+import { OpenTasteSheetButton, TasteSheetHost } from "@/components/taste/taste-sheet";
+import { PalettePicker } from "@/components/theme/palette-picker";
+import { ThemeIconToggle } from "@/components/theme/theme-icon-toggle";
+import { getOrderStats, hasActiveOrder } from "@/lib/data/orders";
+import { getMyWeeklyRank } from "@/lib/data/rank";
+import { getRestaurantCount } from "@/lib/data/restaurants";
+import { getMilestoneRewardClaimedAt } from "@/lib/data/rewards";
+import { getLikedDishes } from "@/lib/data/favorites";
+import { getTasteProfile } from "@/lib/data/taste";
+import { heartCravings, tasteSummary } from "@/lib/taste/options";
+import { formatMonthYear } from "@/lib/date";
+import { NAV_TRANSITION, REVEAL_ENTER } from "@/lib/nav-transition";
+import { requireProfile } from "@/lib/profile";
+import { EditableName } from "./editable-name";
+import { EditablePhone } from "./editable-phone";
+import { ACTIVE_ORDER_PHONE_LOCK_MESSAGE, BANNED_PHONE_LOCK_MESSAGE } from "./phone-lock";
+import { SignOutButton } from "./sign-out-button";
+
+export const metadata: Metadata = { title: "Profile · College Bites", robots: { index: false, follow: false } };
+
+export default async function ProfilePage() {
+ // Kicked off up front rather than after requireProfile() resolves —
+ // neither needs the profile, so there's no reason to make them wait
+ // behind that lookup instead of running alongside it.
+ const profilePromise = requireProfile();
+ const totalRestaurantsPromise = getRestaurantCount();
+ const weeklyRankPromise = getMyWeeklyRank();
+
+ const profile = await profilePromise;
+ const [orderInProgress, orderStats, totalRestaurants, weeklyRank, rewardClaimedAt, taste, liked] = await Promise.all([
+ hasActiveOrder(profile.id),
+ getOrderStats(profile.id),
+ totalRestaurantsPromise,
+ weeklyRankPromise,
+ getMilestoneRewardClaimedAt(profile.id),
+ getTasteProfile(profile.id),
+ getLikedDishes(profile.id),
+ ]);
+
+ // Mirrors the precedence in profile/actions.ts's updatePhone — that
+ // server check is the real enforcement; this just tells the UI which
+ // message (if any) to show instead of the Edit button.
+ const phoneLockReason = profile.is_banned
+ ? BANNED_PHONE_LOCK_MESSAGE
+ : orderInProgress
+ ? ACTIVE_ORDER_PHONE_LOCK_MESSAGE
+ : null;
+
+ const unlockedMilestones = getUnlockedMilestones(
+ orderStats.deliveredCount,
+ orderStats.restaurantsVisited,
+ totalRestaurants,
+ );
+
+ return (
+ <main className="mx-auto w-full max-w-md px-6 pt-6 pb-28">
+ <MilestoneUnlockWatcher unlockedCsv={unlockedMilestones.join(",")} />
+ <TasteSheetHost taste={taste} fromHearts={heartCravings(liked)} />
+ <ViewTransition {...NAV_TRANSITION}>
+ <ViewTransition {...REVEAL_ENTER}>
+ <MemberCard
+ avatar={taste.avatar}
+ name={profile.full_name}
+ memberSince={formatMonthYear(profile.created_at)}
+ rankBadge={<WeeklyRankBadge rank={weeklyRank} />}
+ cravingsSolved={orderStats.deliveredCount}
+ streakDays={orderStats.streakDays}
+ noShows={orderStats.cancelledCount}
+ />
+
+ <MilestoneBadges
+ deliveredCount={orderStats.deliveredCount}
+ restaurantsVisited={orderStats.restaurantsVisited}
+ totalRestaurants={totalRestaurants}
+ rewardClaimedAt={rewardClaimedAt}
+ />
+
+ <LikedDishes dishes={liked} />
+
+ <h2 className="mt-8 font-heading text-title font-bold">Your details</h2>
+ <p className="text-sm text-muted-foreground">Tap a field to edit it.</p>
+ <div className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+ <EditableName initialValue={profile.full_name} />
+ <EditablePhone
+ initialValue={profile.phone}
+ lockedReason={phoneLockReason}
+ banned={profile.is_banned}
+ />
+ <div className="flex items-center gap-3 px-5 py-4">
+ <IconTile>
+ <Pepper className="text-primary size-5" />
+ </IconTile>
+ <div className="min-w-0 flex-1">
+ <p className="text-label text-muted-foreground">Your taste</p>
+ <p className="mt-0.5 font-semibold">{tasteSummary(taste) || "Not set yet"}</p>
+ </div>
+ <OpenTasteSheetButton
+ aria-label="Edit your taste and avatar"
+ className="shrink-0 rounded-full bg-secondary px-3.5 py-1.5 text-sm font-semibold text-foreground outline-none hover:brightness-95 focus-visible:ring-2 focus-visible:ring-ring/80"
+ >
+ Edit
+ </OpenTasteSheetButton>
+ </div>
+ <div className="flex items-center gap-3 px-5 py-4">
+ <IconTile>
+ <Mail className="text-primary size-5" />
+ </IconTile>
+ <div className="min-w-0 flex-1">
+ <p className="text-label text-muted-foreground">Email · signed in with Google</p>
+ <p className="mt-0.5 truncate font-semibold">{profile.email}</p>
+ </div>
+ <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Can't be changed" />
+ </div>
+ <div className="flex items-center gap-3 px-5 py-4">
+ <IconTile>
+ <MapPin className="text-primary size-5" />
+ </IconTile>
+ <div>
+ <p className="text-label text-muted-foreground">Handover point</p>
+ <p className="font-semibold">Gate 3</p>
+ </div>
+ </div>
+ </div>
+
+ <h2 className="mt-8 font-heading text-title font-bold">Settings</h2>
+ <div className="mt-3 divide-y overflow-hidden rounded-[1.5rem] border bg-card shadow-card">
+ <div className="px-5 pt-3.5 pb-5">
+ <div className="flex items-center gap-3">
+ <IconTile>
+ <Palette className="text-primary size-5" />
+ </IconTile>
+ <div className="min-w-0 flex-1">
+ <p className="font-semibold">Theme</p>
+ <p className="text-sm text-muted-foreground">Colours for the whole app, on this phone.</p>
+ </div>
+ </div>
+ <PalettePicker className="mt-4" />
+ </div>
+ <div className="flex items-center gap-3 px-5 py-3.5">
+ <IconTile>
+ <Sun className="text-primary size-5" />
+ </IconTile>
+ <p className="min-w-0 flex-1 font-semibold">Appearance</p>
+ <ThemeIconToggle />
+ </div>
+ <div className="flex items-center gap-3 px-5 py-3.5">
+ <IconTile>
+ <Bell className="text-primary size-5" />
+ </IconTile>
+ <div className="min-w-0 flex-1">
+ <p className="font-semibold">Order notifications</p>
+ <p className="text-sm text-muted-foreground">Confirmed, delivered and cancelled.</p>
+ </div>
+ <NotificationToggle />
+ </div>
+ <div className="flex items-center gap-3 px-5 py-3.5">
+ <IconTile>
+ <Volume2 className="text-primary size-5" />
+ </IconTile>
+ <p className="min-w-0 flex-1 font-semibold">Order placed sound</p>
+ <SoundToggle />
+ </div>
+ </div>
+
+ <SupportCard />
+ <ChannelCard />
+
+ <div className="mt-6">
+ <SignOutButton />
+ </div>
+ </ViewTransition>
+ </ViewTransition>
+
+ </main>
+ );
+}
