@@ -238,7 +238,7 @@ export function OrderTracking({
 										<div className="min-w-0 flex-1">
 											<p className="truncate text-sm font-semibold text-white">{initialOrder.restaurantName}</p>
 											<p className="flex items-center gap-1 text-xs text-white/80">
-												<MapPin className="size-3" /> Gate 3, SRM AP
+												<MapPin className="size-3" /> Gate 3, Amrita AP
 											</p>
 										</div>
 									</div>

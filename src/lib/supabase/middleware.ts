@@ -4,7 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 // Routes a signed-out visitor may open. Everything else bounces to /login.
 // /privacy and /terms must stay public — Google's OAuth consent-screen
 // review fetches them signed out.
-const PUBLIC_PATHS = ["/login", "/auth", "/privacy", "/terms"];
+// Browsing routes: /, /restaurants/* are public for anonymous menu browsing.
+const PUBLIC_PATHS = ["/login", "/auth", "/privacy", "/terms", "/", "/restaurants"];
 
 function isPublicPath(pathname: string) {
  return PUBLIC_PATHS.some(

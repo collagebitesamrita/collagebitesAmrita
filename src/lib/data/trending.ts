@@ -23,7 +23,12 @@ export async function getTrendingDishes(limit = 5): Promise<TrendingDish[]> {
  const supabase = await createClient();
  const { data, error } = await supabase.rpc("trending_dishes", { result_limit: limit });
 
- if (error) throw error;
+ if (error) {
+ // Anonymous users can't call this RPC (granted to authenticated only).
+ // Return empty rather than crashing the home page for guests.
+ console.error("getTrendingDishes failed", error);
+ return [];
+ }
  return ((data ?? []) as TrendingDishRow[]).map((d) => ({
  dishId: d.dish_id,
  dishName: d.dish_name,

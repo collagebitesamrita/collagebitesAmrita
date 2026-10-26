@@ -119,25 +119,33 @@ export type ThursdaySpecial = { restaurantId: string; restaurantName: string; di
  * so that's what this matches against.
  */
 export async function getThursdaySpecial(): Promise<ThursdaySpecial | null> {
- const supabase = await createClient();
- const { data, error } = await supabase
- .from("dishes")
- .select("id, name, sort_order, restaurant_id, restaurants!inner(name, is_active)")
- .ilike("note", "%thursday%")
- .eq("is_available", true)
- .eq("restaurants.is_active", true)
- .order("sort_order")
- .limit(1)
- .maybeSingle<{ id: string; name: string; restaurant_id: string; restaurants: { name: string } }>();
+ try {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+   .from("dishes")
+   .select("id, name, sort_order, restaurant_id, restaurants!inner(name, is_active)")
+   .ilike("note", "%thursday%")
+   .eq("is_available", true)
+   .eq("restaurants.is_active", true)
+   .order("sort_order")
+   .limit(1)
+   .maybeSingle<{ id: string; name: string; restaurant_id: string; restaurants: { name: string } }>();
 
- if (error) throw error;
- if (!data) return null;
- return {
- restaurantId: data.restaurant_id,
- restaurantName: data.restaurants.name,
- dishId: data.id,
- dishName: data.name,
- };
+  if (error) {
+   console.error("getThursdaySpecial error", error);
+   return null;
+  }
+  if (!data) return null;
+  return {
+   restaurantId: data.restaurant_id,
+   restaurantName: data.restaurants.name,
+   dishId: data.id,
+   dishName: data.name,
+  };
+ } catch (err) {
+  console.error("getThursdaySpecial failed", err);
+  return null;
+ }
 }
 
 /**

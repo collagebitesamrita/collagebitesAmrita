@@ -17,7 +17,8 @@ import { isUuid } from "@/lib/ids";
 import { getOrderingState } from "@/lib/data/settings";
 import { getOffers } from "@/lib/data/offers";
 import { NAV_TRANSITION, REVEAL_ENTER } from "@/lib/nav-transition";
-import { requireProfile } from "@/lib/profile";
+import { getSessionProfile } from "@/lib/profile";
+import { EMPTY_TASTE } from "@/lib/taste/options";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -29,15 +30,11 @@ export async function generateMetadata({
 }
 
 export default async function RestaurantPage({ params, searchParams }: PageProps<"/restaurants/[id]">) {
- // Kicked off up front rather than after requireProfile() resolves —
- // getOrderingEnabled() needs neither the profile nor the restaurant id,
- // so there's no reason to make it wait behind either lookup instead of
- // running alongside them.
  const { id } = await params;
  // A malformed id is a plain 404 — checked before any lookup starts, since
  // the per-student queries below would hand it straight to Postgres.
  if (!isUuid(id)) notFound();
- const profilePromise = requireProfile();
+ const profilePromise = getSessionProfile();
  const orderingPromise = getOrderingState();
  const offersPromise = getOffers();
  const highlyReorderedPromise = getHighlyReorderedDishIds();
@@ -47,17 +44,34 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
  const { dish } = await searchParams;
  const focusDishId = typeof dish === "string" && isUuid(dish) ? dish : null;
 
- const profile = await profilePromise;
- const [menu, ordering, triedDishIds, usualDishId, highlyReorderedDishIds, taste, liked, offers] = await Promise.all([
- menuPromise,
- orderingPromise,
- getTriedDishIds(profile.id, id),
- getUsualDishId(profile.id, id),
- highlyReorderedPromise,
- getTasteProfile(profile.id),
- getLikedDishes(profile.id),
- offersPromise,
+ const { profile } = await profilePromise;
+
+ // Profile-dependent lookups — only when signed in.
+ let triedDishIds = new Set<string>();
+ let usualDishId: string | null = null;
+ let taste = EMPTY_TASTE;
+ let liked: Awaited<ReturnType<typeof getLikedDishes>> = [];
+
+ const [menu, ordering, highlyReorderedDishIds, offers] = await Promise.all([
+  menuPromise,
+  orderingPromise,
+  highlyReorderedPromise,
+  offersPromise,
  ]);
+
+ if (profile) {
+  const [td, ud, tp, lk] = await Promise.all([
+   getTriedDishIds(profile.id, id),
+   getUsualDishId(profile.id, id),
+   getTasteProfile(profile.id),
+   getLikedDishes(profile.id),
+  ]);
+  triedDishIds = td;
+  usualDishId = ud;
+  taste = tp;
+  liked = lk;
+ }
+
  if (!menu) notFound();
 
  const { restaurant, sections } = menu;
@@ -70,22 +84,22 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
  const cards = sections.flatMap((s) => groupPortions(s.dishes));
  const totalDishes = cards.length;
  const dishesTried = cards.filter((c) =>
- c.kind === "dish" ? triedDishIds.has(c.dish.id) : c.portions.some((p) => triedDishIds.has(p.dish.id)),
+  c.kind === "dish" ? triedDishIds.has(c.dish.id) : c.portions.some((p) => triedDishIds.has(p.dish.id)),
  ).length;
  const cover = getRestaurantCoverPhoto(restaurant.name, restaurant.cover_image_url);
  const statusBadge = (
- <span
- className={cn(
- "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-card/90 px-3 py-1 text-sm font-semibold backdrop-blur-sm",
- orderable ? "text-success" : "text-muted-foreground",
- )}
- >
- <span className="relative flex size-1.5" aria-hidden="true">
- {orderable && <span className="animate-ping-slow absolute inset-0 rounded-full bg-success" />}
- <span className={cn("relative size-1.5 rounded-full", orderable ? "bg-success" : "bg-muted-foreground")} />
- </span>
- {!active ? "Closed" : paused ? ordering.short : "Open"}
- </span>
+  <span
+   className={cn(
+    "inline-flex shrink-0 items-center gap-1.5 rounded-full bg-card/90 px-3 py-1 text-sm font-semibold backdrop-blur-sm",
+    orderable ? "text-success" : "text-muted-foreground",
+   )}
+  >
+   <span className="relative flex size-1.5" aria-hidden="true">
+    {orderable && <span className="animate-ping-slow absolute inset-0 rounded-full bg-success" />}
+    <span className={cn("relative size-1.5 rounded-full", orderable ? "bg-success" : "bg-muted-foreground")} />
+   </span>
+   {!active ? "Closed" : paused ? ordering.short : "Open"}
+  </span>
  );
 
  // Same anatomy as Home's restaurant card: the photo is just a photo (no
@@ -94,84 +108,84 @@ export default async function RestaurantPage({ params, searchParams }: PageProps
  // matter as chips (cuisines, the delivery promise, free delivery to Gate
  // 3) and the "tried N of M" sunset bar.
  return (
- <main className="mx-auto w-full max-w-md">
- <ViewTransition {...NAV_TRANSITION}>
- <ViewTransition {...REVEAL_ENTER}>
- <div className={cn("relative aspect-[16/10] bg-secondary", !active && "grayscale")}>
- {cover && (
- <BlurImage
- src={cover}
- alt=""
- sizes="(min-width: 448px) 448px, 100vw"
- className="object-cover"
- />
- )}
- <Link
- href="/"
- aria-label="Back to restaurants"
- transitionTypes={["nav-back"]}
- className="absolute top-4 left-4 flex size-11 items-center justify-center rounded-full bg-card/90 shadow-card backdrop-blur-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/80"
- >
- <ArrowLeft className="size-5" />
- </Link>
- <div className="absolute top-5 right-4">{statusBadge}</div>
- </div>
+  <main className="mx-auto w-full max-w-md">
+   <ViewTransition {...NAV_TRANSITION}>
+    <ViewTransition {...REVEAL_ENTER}>
+     <div className={cn("relative aspect-[16/10] bg-secondary", !active && "grayscale")}>
+      {cover && (
+       <BlurImage
+        src={cover}
+        alt=""
+        sizes="(min-width: 448px) 448px, 100vw"
+        className="object-cover"
+       />
+      )}
+      <Link
+       href="/"
+       aria-label="Back to restaurants"
+       transitionTypes={["nav-back"]}
+       className="absolute top-4 left-4 flex size-11 items-center justify-center rounded-full bg-card/90 shadow-card backdrop-blur-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/80"
+      >
+       <ArrowLeft className="size-5" />
+      </Link>
+      <div className="absolute top-5 right-4">{statusBadge}</div>
+     </div>
 
- <div className="relative -mt-7 rounded-t-[1.75rem] bg-background px-6 shadow-[0_-12px_30px_-18px_var(--glow-sun)]">
- <header className="pt-6 pb-3">
- <h1 className="font-heading text-headline font-bold">{restaurant.name}</h1>
- {restaurant.description && (
- <p className="mt-1 flex items-center gap-1 text-muted-foreground">
- <MapPin className="size-4 shrink-0" />
- {restaurant.description}
- </p>
- )}
- <ul className="mt-3 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
- {restaurant.cuisine_tags.map((tag) => (
- <li key={tag} className="rounded-full bg-secondary px-2.5 py-1 text-primary">
- {tag}
- </li>
- ))}
- <li className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1">
- <Timer className="text-primary size-3.5 shrink-0 text-muted-foreground" />
- Delivery in {restaurant.delivery_minutes} min
- </li>
- <li className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1">
- <MapPin className="text-primary size-3.5 shrink-0 text-muted-foreground" />
- Free to Gate 3
- </li>
- </ul>
- <MenuProgress restaurantName={restaurant.name} tried={dishesTried} total={totalDishes} />
- {!active && (
- <p className="mt-4 rounded-2xl border border-pink-soft-foreground/15 bg-secondary px-4 py-3 text-sm text-foreground">
- <strong className="font-semibold">Closed right now.</strong> You can browse the
- menu, and ordering opens when they&apos;re back.
- </p>
- )}
- {paused && (
- <p className="mt-4 rounded-2xl border border-pink-soft-foreground/15 bg-secondary px-4 py-3 text-sm text-foreground">
- <strong className="font-semibold">{ordering.headline}.</strong> {ordering.detail}
- </p>
- )}
- </header>
+     <div className="relative -mt-7 rounded-t-[1.75rem] bg-background px-6 shadow-[0_-12px_30px_-18px_var(--glow-sun)]">
+      <header className="pt-6 pb-3">
+       <h1 className="font-heading text-headline font-bold">{restaurant.name}</h1>
+       {restaurant.description && (
+        <p className="mt-1 flex items-center gap-1 text-muted-foreground">
+         <MapPin className="size-4 shrink-0" />
+         {restaurant.description}
+        </p>
+       )}
+       <ul className="mt-3 flex flex-wrap items-center gap-1.5 text-xs font-semibold">
+        {restaurant.cuisine_tags.map((tag) => (
+         <li key={tag} className="rounded-full bg-secondary px-2.5 py-1 text-primary">
+          {tag}
+         </li>
+        ))}
+        <li className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1">
+         <Timer className="text-primary size-3.5 shrink-0 text-muted-foreground" />
+         Delivery in {restaurant.delivery_minutes} min
+        </li>
+        <li className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1">
+         <MapPin className="text-primary size-3.5 shrink-0 text-muted-foreground" />
+         Free to Gate 3
+        </li>
+       </ul>
+       {profile && <MenuProgress restaurantName={restaurant.name} tried={dishesTried} total={totalDishes} />}
+       {!active && (
+        <p className="mt-4 rounded-2xl border border-pink-soft-foreground/15 bg-secondary px-4 py-3 text-sm text-foreground">
+         <strong className="font-semibold">Closed right now.</strong> You can browse the
+         menu, and ordering opens when they&apos;re back.
+        </p>
+       )}
+       {paused && (
+        <p className="mt-4 rounded-2xl border border-pink-soft-foreground/15 bg-secondary px-4 py-3 text-sm text-foreground">
+         <strong className="font-semibold">{ordering.headline}.</strong> {ordering.detail}
+        </p>
+       )}
+      </header>
 
- <MenuView
- restaurant={restaurant}
- sections={sections}
- profilePhone={profile.phone}
- orderingEnabled={orderingEnabled}
- closedChip={ordering.short}
- closedNote={ordering.headline}
- usualDishId={usualDishId}
- highlyReorderedDishIds={highlyReorderedDishIds}
- focusDishId={focusDishId}
- spiceLevel={taste.spiceLevel}
- offers={offers}
- likedDishIds={liked.filter((d) => d.restaurantId === id).map((d) => d.id)}
- />
- </div>
- </ViewTransition>
- </ViewTransition>
- </main>
+      <MenuView
+       restaurant={restaurant}
+       sections={sections}
+       profilePhone={profile?.phone ?? null}
+       orderingEnabled={orderingEnabled}
+       closedChip={ordering.short}
+       closedNote={ordering.headline}
+       usualDishId={usualDishId}
+       highlyReorderedDishIds={highlyReorderedDishIds}
+       focusDishId={focusDishId}
+       spiceLevel={taste.spiceLevel}
+       offers={offers}
+       likedDishIds={liked.filter((d) => d.restaurantId === id).map((d) => d.id)}
+      />
+     </div>
+    </ViewTransition>
+   </ViewTransition>
+  </main>
  );
 }

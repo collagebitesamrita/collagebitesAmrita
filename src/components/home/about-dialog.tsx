@@ -28,13 +28,13 @@ export function AboutDialog({ children }: { children: ReactNode }) {
  <p className="text-sm font-bold text-primary">Crave. Click. Campus.</p>
  <DialogDescription className="mt-3 leading-relaxed">
  Biryani, fried rice, noodles and starters, veg and non-veg, from partner kitchens
- near SRM AP. Order here, collect at Gate 3.
+ near Amrita AP. Order here, collect at your gate.
  </DialogDescription>
  <ul className="mt-4 flex flex-wrap justify-center gap-1.5 text-xs font-semibold">
- <li className="rounded-full bg-secondary px-2.5 py-1">Pickup at Gate 3</li>
+ <li className="rounded-full bg-secondary px-2.5 py-1">Pickup at Gate </li>
  <li className="rounded-full bg-secondary px-2.5 py-1">Pay on delivery, cash or UPI</li>
  </ul>
- <p className="mt-4 text-label text-primary">Order in a minute · Collect at Gate 3</p>
+ <p className="mt-4 text-label text-primary">Order in a minute · Collect at Gate </p>
  <a
  href={WHATSAPP_CHANNEL_URL}
  target="_blank"

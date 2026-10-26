@@ -10,12 +10,19 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function getOrderingState(): Promise<OrderingState> {
  const supabase = await createClient();
- const [settings, open] = await Promise.all([
- supabase.from("app_settings").select("ordering_mode").eq("id", true).single(),
- supabase.rpc("ordering_is_open"),
- ]);
+ try {
+  const [settings, open] = await Promise.all([
+   supabase.from("app_settings").select("ordering_mode").eq("id", true).single(),
+   supabase.rpc("ordering_is_open"),
+  ]);
 
- if (settings.error) throw settings.error;
- if (open.error) throw open.error;
- return describeOrdering(settings.data.ordering_mode as OrderingMode, open.data === true);
+  if (settings.error || open.error) {
+   console.error("getOrderingState error", settings.error ?? open.error);
+   return describeOrdering("open", true);
+  }
+  return describeOrdering(settings.data.ordering_mode as OrderingMode, open.data === true);
+ } catch (err) {
+  console.error("getOrderingState failed", err);
+  return describeOrdering("open", true);
+ }
 }

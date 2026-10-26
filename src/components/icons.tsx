@@ -42,6 +42,7 @@ import { Check as PhCheck } from "@phosphor-icons/react/dist/ssr/Check";
 import { CheckCircle as PhCheckCircle } from "@phosphor-icons/react/dist/ssr/CheckCircle";
 import { ChefHat as PhChefHat } from "@phosphor-icons/react/dist/ssr/ChefHat";
 import { CircleNotch as PhCircleNotch } from "@phosphor-icons/react/dist/ssr/CircleNotch";
+import { Clock as PhClock } from "@phosphor-icons/react/dist/ssr/Clock";
 import { ClockCounterClockwise as PhClockCounterClockwise } from "@phosphor-icons/react/dist/ssr/ClockCounterClockwise";
 import { Coffee as PhCoffee } from "@phosphor-icons/react/dist/ssr/Coffee";
 import { Compass as PhCompass } from "@phosphor-icons/react/dist/ssr/Compass";
@@ -193,6 +194,7 @@ export const Gift = make(PhGift, "Gift");
 /** sugarcane / drinks */
 export const GlassWater = make(PhPintGlass, "GlassWater");
 /** order history */
+export const Clock = make(PhClock, "Clock");
 export const History = make(PhClockCounterClockwise, "History");
 /** home tab */
 export const Home = make(PhHouse, "Home");

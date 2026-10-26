@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 /** Who's behind the app — the About dialog's footer. */
 const OWNERS = "Jaswanth & Harsha";
 const DEVELOPER = {
- name: "Naga Adithya",
- phone: "+919032563455",
- email: "nagaadithya999@gmail.com",
+ name: "Bhima vijith",
+ phone: "+918519984279",
+ email: "vijith.bhima0999@gmail.com",
 };
 
 /**
@@ -82,7 +82,7 @@ export function AboutCredits() {
  </p>
  </div>
  </div>
- <p className="mt-3">~ college bites · srm ap</p>
+ <p className="mt-3">~ college bites · amrita ap</p>
  </div>
  );
 }

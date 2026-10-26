@@ -23,7 +23,7 @@ export function CartBar({
  spiceLevel = null,
  offers,
 }: {
- profilePhone: string;
+ profilePhone: string | null;
  /** On a menu page: names the cart's restaurant when it's a different one. */
  currentRestaurantId?: string;
  /** Campus-wide kill switch — disables checkout in the cart sheet when off. */
@@ -43,6 +43,8 @@ export function CartBar({
  const totals = cartTotals(cart);
  const cartIsElsewhere = cart.restaurantId !== null && cart.restaurantId !== currentRestaurantId;
 
+ // Cart bar shows for everyone when cart has items — anonymous users can
+ // browse, add dishes and see their cart. They sign in only when checking out.
  return (
  <>
  {totals.items > 0 && (

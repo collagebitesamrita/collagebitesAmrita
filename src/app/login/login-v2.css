@@ -1,0 +1,67 @@
+/*
+ * Login v2 — "The Spotlight"
+ *
+ * A dark, atmospheric design where the food is the hero. Deep charcoal
+ * background with a warm amber spotlight effect. The biryani photo sits
+ * in a circular frame with a soft glow, like a dish being revealed on stage.
+ *
+ * Motion is minimal and purposeful: gentle glow pulse on the photo, smooth
+ * staggered entrance for content elements. Everything respects reduced-motion.
+ */
+
+/* Subtle grain texture overlay */
+.login-v2-grain {
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	background-repeat: repeat;
+	background-size: 200px 200px;
+}
+
+/* Hero photo container */
+.login-v2-hero {
+	position: relative;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* Gentle glow pulse on the hero photo */
+	.login-v2-hero::before {
+		content: "";
+		position: absolute;
+		inset: -16px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba(255, 140, 66, 0.2), transparent 70%);
+		filter: blur(20px);
+		animation: login-v2-glow 4s ease-in-out infinite alternate;
+	}
+
+	@keyframes login-v2-glow {
+		from {
+			opacity: 0.6;
+			transform: scale(1);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1.05);
+		}
+	}
+
+	/* Staggered entrance animation */
+	.login-v2-rise {
+		animation: login-v2-rise-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--rise-delay, 0s) both;
+	}
+
+	@keyframes login-v2-rise-in {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Hold animations while splash is playing */
+	html:is([data-splash="play"], [data-splash="run"]) .login-v2 * {
+		animation-play-state: paused;
+	}
+}

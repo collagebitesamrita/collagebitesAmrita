@@ -20,6 +20,11 @@ export async function getHighlyReorderedDishIds(): Promise<Set<string>> {
  const supabase = await createClient();
  const { data, error } = await supabase.rpc("highly_reordered_dishes");
 
- if (error) throw error;
+ if (error) {
+ // Anonymous users can't call this RPC (granted to authenticated only).
+ // Return empty rather than crashing the menu page for guests.
+ console.error("getHighlyReorderedDishIds failed", error);
+ return new Set();
+ }
  return new Set(((data ?? []) as HighlyReorderedRow[]).map((d) => d.dish_id));
 }

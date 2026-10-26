@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
  return {
  name: "College Bites",
  short_name: "College Bites",
- description: "Crave. Click. Campus. Food delivery for SRM University AP students.",
+ description: "Crave. Click. Campus. Food delivery for Amrita University AP students.",
  start_url: "/",
  display: "standalone",
  // Android's own launch screen (this colour + the icon) hands straight

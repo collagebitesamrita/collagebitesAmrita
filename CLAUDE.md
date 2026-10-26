@@ -1004,6 +1004,11 @@ Lollipop moved there); piece counts live in `note` ("6 pcs"). 81 dishes
 now, 162 in all. The photos are developer-supplied; KFC French Fries shows
 KFC's branded bucket and KFC Popcorn / Drum Chicken carry recipe-site
 watermarks — swap them (new filenames) when better ones arrive).
+[`supabase/migrations/20261026000000_grant_trending_and_reorders_to_anon.sql`](supabase/migrations/20261026000000_grant_trending_and_reorders_to_anon.sql)
+(grants `execute` on `trending_dishes(int, int)` and
+`highly_reordered_dishes(int, int)` to `anon` so unauthenticated visitors
+browsing Home and restaurant menus can see aggregate trending counts and
+badges without triggering Postgres error 42501).
 **`taste_profiles`** ([`supabase/migrations/20261001000000_taste_profiles.sql`](supabase/migrations/20261001000000_taste_profiles.sql),
 named `taste_profiles` in the database's migration history) — one row per
 student, created the first time they save the "Your taste" sheet:
@@ -1248,8 +1253,10 @@ RLS is enabled on every table:
   app entirely.
 
 - **`trending_dishes(days_back int default 7, result_limit int default 5)`**
-  — security definer, callable by `authenticated` only, same pattern as
-  `place_order()`. Powers the ranked start of Home's "Campus favourites"
+  — security definer, callable by `authenticated` and `anon` (granted to
+  `anon` in `20261026000000_grant_trending_and_reorders_to_anon.sql` for
+  anonymous browsing), same aggregate-only pattern as `place_order()`.
+  Powers the ranked start of Home's "Campus favourites"
   row (`popular-rail.tsx`; the old Trending popup is gone): top ordered dishes campus-wide over a rolling window
   (`orders.status <> 'cancelled'`, restaurant `is_active`, dish
   `is_available`). Needed because students can only read their *own*
@@ -1290,7 +1297,9 @@ once confirmed unused — it no longer exists in the database.
 
 - **`highly_reordered_dishes(min_repeat_students int default 3,
   result_limit int default 10)`** — security definer, callable by
-  `authenticated` only, same aggregate-only pattern as `trending_dishes()`.
+  `authenticated` and `anon` (granted to `anon` in
+  `20261026000000_grant_trending_and_reorders_to_anon.sql`), same
+  aggregate-only pattern as `trending_dishes()`.
   A dish qualifies when at least `min_repeat_students` distinct students
   have each ordered it 3+ times (`orders.status <> 'cancelled'`) — a
   genuine repeat-purchase signal, deliberately different from

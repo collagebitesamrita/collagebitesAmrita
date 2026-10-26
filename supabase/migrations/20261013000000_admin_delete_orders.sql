@@ -5,4 +5,3 @@ create policy "Admins can delete terminal orders" on public.orders
   for delete to authenticated
   using ((select public.is_admin()) and status in ('delivered', 'cancelled'));
 
-</

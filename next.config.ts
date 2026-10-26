@@ -4,6 +4,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseWs = supabaseUrl.replace(/^https:/, "wss:");
 const isDev = process.env.NODE_ENV !== "production";
 
+let supabaseHostname = "cpatbcisnrvyjztyqutq.supabase.co";
+try {
+  if (supabaseUrl) {
+    supabaseHostname = new URL(supabaseUrl).hostname;
+  }
+} catch {}
+
 /*
  * Content Security Policy — a moderate, standard one. Inline scripts stay
  * allowed ('unsafe-inline') because the theme/splash init scripts and the
@@ -34,8 +41,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "cpatbcisnrvyjztyqutq.supabase.co",
-        pathname: "/storage/v1/object/public/restaurant-images/**",
+        hostname: supabaseHostname,
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },

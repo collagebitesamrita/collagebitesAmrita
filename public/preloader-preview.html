@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="claude:viewport-fit-sides" content="cover" />
+  <title>CollegeBites Preloader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #FFF5EE;
+      --fg: #1A0F3D;
+      --card: #FFFFFF;
+      --muted: #8E82A3;
+      --border: rgba(26, 15, 61, 0.08);
+      --primary: #F97316;
+      --primary-dark: #C2410C;
+      --accent: #FF8A1F;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0E0A24;
+        --fg: #FFF0F6;
+        --card: #1A1238;
+        --muted: #A396BD;
+        --border: rgba(255, 240, 246, 0.1);
+        --primary: #F97316;
+        --primary-dark: #EA580C;
+        --accent: #FFA040;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0E0A24;
+      --fg: #FFF0F6;
+      --card: #1A1238;
+      --muted: #A396BD;
+      --border: rgba(255, 240, 246, 0.1);
+      --primary: #F97316;
+      --primary-dark: #EA580C;
+      --accent: #FFA040;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-left: max(16px, env(safe-area-inset-left, 0px));
+      padding-right: max(16px, env(safe-area-inset-right, 0px));
+    }
+
+    /* ===== PRELOADER STYLES ===== */
+    html.cb-loading {
+      overflow: hidden;
+    }
+
+    #cb-preloader {
+      --cb-icon: clamp(84px, 14vw, 136px);
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      overflow: hidden;
+      font-family: "Poppins", "Inter", system-ui, sans-serif;
+    }
+
+    #cb-preloader .cb-layer {
+      position: absolute;
+      inset: 0;
+      will-change: transform, border-radius;
+    }
+
+    #cb-preloader .cb-peach {
+      background: #FFD9BC;
+      transition: transform 1s cubic-bezier(.76,0,.24,1) .7s, border-radius 1s cubic-bezier(.76,0,.24,1) .7s;
+    }
+
+    #cb-preloader .cb-orange {
+      background: linear-gradient(135deg, #FF8A1F, #F25C00);
+      transition: transform 1s cubic-bezier(.76,0,.24,1) .5s, border-radius 1s cubic-bezier(.76,0,.24,1) .5s;
+    }
+
+    #cb-preloader .cb-white {
+      background: radial-gradient(120% 90% at 50% 40%, #ffffff 45%, #FFF4EA 100%);
+      display: grid;
+      place-items: center;
+      transition: transform 1s cubic-bezier(.76,0,.24,1) .3s, border-radius 1s cubic-bezier(.76,0,.24,1) .3s;
+    }
+
+    /* Ambient background blobs & floating aroma particles */
+    #cb-preloader .cb-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: .55;
+      animation: cb-drift 9s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    #cb-preloader .cb-blob.b1 {
+      width: 48vmax;
+      height: 48vmax;
+      left: -14vmax;
+      top: -18vmax;
+      background: #FFD2AE;
+    }
+
+    #cb-preloader .cb-blob.b2 {
+      width: 42vmax;
+      height: 42vmax;
+      right: -12vmax;
+      bottom: -16vmax;
+      background: #FFB27A;
+      opacity: .4;
+      animation-duration: 11s;
+    }
+
+    #cb-preloader .cb-p {
+      position: absolute;
+      bottom: -40px;
+      width: var(--s);
+      height: var(--s);
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #FFE2C7, #FF9A4D);
+      opacity: 0;
+      animation: cb-float var(--t) var(--d) linear infinite;
+      pointer-events: none;
+    }
+
+    /* Content container */
+    #cb-preloader .cb-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(26px, 5vw, 44px);
+      transition: opacity .4s ease, transform .5s cubic-bezier(.5,0,.2,1);
+      z-index: 10;
+    }
+
+    #cb-preloader .cb-logo {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #cb-preloader .cb-icon {
+      position: relative;
+      flex: none;
+      width: var(--cb-icon);
+      height: var(--cb-icon);
+    }
+
+    #cb-preloader .cb-icon::before {
+      content: "";
+      position: absolute;
+      inset: -28%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,138,31,.38), rgba(255,138,31,0) 68%);
+      opacity: 0;
+      animation: cb-glow 2.8s .5s ease-in-out infinite;
+    }
+
+    #cb-preloader .cb-icon svg {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 16px 26px rgba(242,92,0,.32));
+    }
+
+    #cb-preloader .cb-ripple {
+      position: absolute;
+      inset: 0;
+      border-radius: 24%;
+      border: 2px solid #F97316;
+      opacity: 0;
+      animation: cb-ripple 1.3s 1.05s ease-out forwards;
+    }
+
+    #cb-preloader .cb-bg {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: cb-pop .9s .1s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    #cb-preloader .cb-shine {
+      animation: cb-shine 1s 1.9s cubic-bezier(.5,0,.3,1) both;
+    }
+
+    #cb-preloader .cb-c {
+      stroke-dasharray: 100 130;
+      stroke-dashoffset: 100;
+      animation: cb-draw 1s .5s cubic-bezier(.65,0,.35,1) forwards;
+    }
+
+    #cb-preloader .cb-fork {
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      animation: cb-fork .75s .95s cubic-bezier(.34,1.7,.64,1) both;
+    }
+
+    #cb-preloader .cb-bc {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: cb-bite .45s cubic-bezier(.3,1.5,.5,1) both;
+    }
+
+    #cb-preloader .cb-bc.b1 { animation-delay: 2.35s; }
+    #cb-preloader .cb-bc.b2 { animation-delay: 2.42s; }
+    #cb-preloader .cb-bc.b3 { animation-delay: 2.49s; }
+
+    #cb-preloader .cb-crumbs .cr {
+      fill: #F97316;
+      opacity: 0;
+      animation: cb-crumb .9s 2.45s cubic-bezier(.2,.7,.3,1) both;
+    }
+
+    /* Wordmark */
+    #cb-preloader .cb-words {
+      display: grid;
+      grid-template-columns: 0fr;
+      animation: cb-open 1s 1.05s cubic-bezier(.16,1,.3,1) forwards;
+    }
+
+    #cb-preloader .cb-words-in {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    #cb-preloader .cb-words-row {
+      display: flex;
+      padding-left: calc(var(--cb-icon) * .08);
+    }
+
+    #cb-preloader .cb-word {
+      display: block;
+      height: calc(var(--cb-icon) * .528);
+    }
+
+    #cb-preloader .cb-word svg {
+      display: block;
+      height: 100%;
+      width: auto;
+      overflow: visible;
+    }
+
+    #cb-preloader .cb-l {
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+      opacity: 0;
+      animation: cb-letter .75s calc(1.3s + var(--i) * .075s) cubic-bezier(.34,1.7,.64,1) forwards,
+                 cb-wave .7s calc(2.75s + var(--i) * .045s) ease-in-out 1;
+    }
+
+    /* Sparkles */
+    #cb-preloader .cb-spark {
+      position: absolute;
+      width: calc(var(--cb-icon) * .2);
+      height: calc(var(--cb-icon) * .2);
+      fill: #FF9A3D;
+      opacity: 0;
+      pointer-events: none;
+      animation: cb-twinkle 2.2s var(--sd) ease-in-out infinite;
+    }
+
+    #cb-preloader .cb-spark.s1 { left: -9%; top: -16%; --sd: 2.5s; }
+    #cb-preloader .cb-spark.s2 { right: 3%; top: -20%; --sd: 2.9s; width: calc(var(--cb-icon) * .26); height: calc(var(--cb-icon) * .26); }
+    #cb-preloader .cb-spark.s3 { right: -5%; bottom: -14%; --sd: 3.2s; fill: #F25C00; }
+    #cb-preloader .cb-spark.s4 { left: 44%; bottom: -18%; --sd: 2.7s; width: calc(var(--cb-icon) * .14); height: calc(var(--cb-icon) * .14); }
+
+    /* Progress meter */
+    #cb-preloader .cb-meter {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      opacity: 0;
+      animation: cb-fade .6s 1.8s forwards;
+    }
+
+    #cb-preloader .cb-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #cb-preloader .cb-bar {
+      position: relative;
+      width: clamp(180px, 32vw, 270px);
+      height: 9px;
+      border-radius: 99px;
+      background: #FFE3CE;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(194,65,12,.15);
+    }
+
+    #cb-preloader .cb-bar i {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      overflow: hidden;
+      transform-origin: left;
+      transform: scaleX(var(--p, 0));
+      background: linear-gradient(90deg, #FFA040, #F25C00);
+      will-change: transform;
+    }
+
+    #cb-preloader .cb-bar i::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 50%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent);
+      animation: cb-sheen 1.3s linear infinite;
+    }
+
+    #cb-preloader .cb-pct {
+      min-width: 3.2ch;
+      font-size: clamp(14px, 2.6vw, 17px);
+      font-weight: 700;
+      color: #C2410C;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #cb-preloader .cb-tip {
+      margin: 0;
+      min-height: 1.4em;
+      font-size: clamp(13px, 2.4vw, 15px);
+      font-weight: 600;
+      color: #C2410C;
+      opacity: .85;
+      transition: opacity .25s ease, transform .25s ease;
+      text-align: center;
+    }
+
+    #cb-preloader .cb-tip.cb-swap {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    /* Exit animation */
+    #cb-preloader.cb-done .cb-content {
+      opacity: 0;
+      transform: translateY(-22px) scale(1.1);
+    }
+
+    #cb-preloader.cb-done .cb-layer {
+      transform: translateY(-101%);
+      border-radius: 0 0 50% 50% / 0 0 18vw 18vw;
+    }
+
+    /* Keyframes */
+    @keyframes cb-pop { 0% { transform: scale(.2) rotate(-16deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+    @keyframes cb-draw { to { stroke-dashoffset: 0; } }
+    @keyframes cb-fork { 0% { opacity: 0; transform: translateY(60px) scaleY(.5); } 100% { opacity: 1; transform: none; } }
+    @keyframes cb-open { to { grid-template-columns: 1fr; } }
+    @keyframes cb-letter { 0% { opacity: 0; transform: translateY(55%) scale(.4) rotate(-8deg); } 100% { opacity: 1; transform: none; } }
+    @keyframes cb-wave { 0%, 100% { transform: none; } 45% { transform: translateY(-9%); } }
+    @keyframes cb-ripple { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+    @keyframes cb-shine { from { transform: translateX(0); } to { transform: translateX(900px); } }
+    @keyframes cb-bite { from { transform: scale(0); } to { transform: scale(1); } }
+    @keyframes cb-crumb { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(.3); } }
+    @keyframes cb-twinkle { 0%, 100% { opacity: 0; transform: scale(.2) rotate(0); } 50% { opacity: 1; transform: scale(1) rotate(90deg); } }
+    @keyframes cb-glow { 0%, 100% { opacity: .45; transform: scale(.95); } 50% { opacity: .9; transform: scale(1.08); } }
+    @keyframes cb-float { 0% { opacity: 0; transform: translate(0,0); } 12% { opacity: .7; } 80% { opacity: .5; } 100% { opacity: 0; transform: translate(var(--x), -112vh); } }
+    @keyframes cb-drift { to { transform: translate(6vmax, 5vmax) scale(1.12); } }
+    @keyframes cb-sheen { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
+    @keyframes cb-fade { to { opacity: 1; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      #cb-preloader *, #cb-preloader *::before, #cb-preloader *::after {
+        animation-duration: .01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+      }
+      #cb-preloader .cb-p, #cb-preloader .cb-spark { display: none; }
+      #cb-preloader .cb-layer { transition: opacity .4s ease !important; }
+      #cb-preloader.cb-done .cb-layer { transform: none; opacity: 0; }
+    }
+
+    /* ===== MOCK APPLICATION SCREEN (Underneath the Curtain) ===== */
+    .app-viewport {
+      max-width: 580px;
+      margin: 0 auto;
+      padding-top: max(16px, env(safe-area-inset-top, 0px));
+      padding-bottom: 96px;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity .6s ease .5s, transform .6s cubic-bezier(0.16, 1, 0.3, 1) .5s;
+    }
+
+    html.cb-ready .app-viewport {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 4px 16px;
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-brand-tile {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #FF8A1F, #F25C00);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 12px rgba(242, 92, 0, 0.25);
+    }
+
+    .app-brand-tile svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .app-title-group h2 {
+      font-family: "Poppins", sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .app-gate-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 600;
+      background: rgba(249, 115, 22, 0.1);
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-top: 2px;
+    }
+
+    .app-hero-card {
+      background: linear-gradient(135deg, #FF8A1F, #F25C00);
+      color: #fff;
+      padding: 24px;
+      border-radius: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(242, 92, 0, 0.25);
+    }
+
+    .app-hero-card::after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      bottom: -30px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+      border-radius: 50%;
+    }
+
+    .app-hero-card h1 {
+      font-family: "Poppins", sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .app-hero-card p {
+      font-size: 0.95rem;
+      opacity: 0.92;
+      line-height: 1.4;
+    }
+
+    .app-section-title {
+      font-family: "Poppins", sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 24px 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .app-rail {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .app-food-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+
+    .app-food-emoji {
+      font-size: 2rem;
+      margin-bottom: 6px;
+    }
+
+    .app-food-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .app-restaurant-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .app-rest-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #FFF0E5;
+      color: #F25C00;
+      display: grid;
+      place-items: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .app-rest-details h3 {
+      font-family: "Poppins", sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .app-rest-details p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .app-time-chip {
+      margin-left: auto;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(249, 115, 22, 0.12);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    /* ===== INTERACTIVE CONTROL DECK ===== */
+    .control-deck {
+      position: fixed;
+      bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.08);
+      z-index: 100000;
+      backdrop-filter: blur(12px);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #FF8A1F, #F25C00);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(242, 92, 0, 0.3);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-action:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn-action:active {
+      transform: scale(0.96);
+    }
+
+    .btn-pill {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: 99px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-pill:hover {
+      background: rgba(125, 125, 125, 0.08);
+    }
+
+    .deck-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+  </style>
+</head>
+<body class="cb-loading">
+
+  <!-- ================= PRELOADER COMPONENT ================= -->
+  <div id="cb-preloader" role="status" aria-live="polite" aria-label="Loading CollegeBites">
+    <div class="cb-layer cb-peach"></div>
+    <div class="cb-layer cb-orange"></div>
+    <div class="cb-layer cb-white">
+      <span class="cb-blob b1"></span>
+      <span class="cb-blob b2"></span>
+      <!-- Floating aroma bubbles -->
+      <i class="cb-p" style="left:21%;--s:10px;--d:1.97s;--t:6.2s;--x:28px"></i>
+      <i class="cb-p" style="left:48%;--s:6px;--d:2.91s;--t:10.5s;--x:-13px"></i>
+      <i class="cb-p" style="left:13%;--s:6px;--d:2.17s;--t:6.3s;--x:-29px"></i>
+      <i class="cb-p" style="left:56%;--s:18px;--d:0.30s;--t:8.8s;--x:-12px"></i>
+      <i class="cb-p" style="left:82%;--s:24px;--d:2.91s;--t:6.3s;--x:34px"></i>
+      <i class="cb-p" style="left:8%;--s:14px;--d:4.88s;--t:6.2s;--x:-23px"></i>
+      <i class="cb-p" style="left:55%;--s:10px;--d:0.72s;--t:6.6s;--x:-1px"></i>
+      <i class="cb-p" style="left:89%;--s:18px;--d:0.90s;--t:8.9s;--x:-16px"></i>
+      <i class="cb-p" style="left:14%;--s:10px;--d:2.74s;--t:6.3s;--x:-33px"></i>
+      <i class="cb-p" style="left:28%;--s:18px;--d:2.48s;--t:8.7s;--x:0px"></i>
+      <i class="cb-p" style="left:76%;--s:14px;--d:4.62s;--t:7.8s;--x:-9px"></i>
+      <i class="cb-p" style="left:91%;--s:8px;--d:3.90s;--t:6.4s;--x:-2px"></i>
+      <i class="cb-p" style="left:65%;--s:18px;--d:4.38s;--t:9.6s;--x:-4px"></i>
+      <i class="cb-p" style="left:11%;--s:18px;--d:0.59s;--t:8.1s;--x:3px"></i>
+      <i class="cb-p" style="left:64%;--s:8px;--d:2.11s;--t:10.8s;--x:-31px"></i>
+      <i class="cb-p" style="left:75%;--s:18px;--d:3.95s;--t:10.1s;--x:3px"></i>
+      <i class="cb-p" style="left:46%;--s:24px;--d:2.97s;--t:8.9s;--x:18px"></i>
+      <i class="cb-p" style="left:13%;--s:6px;--d:4.72s;--t:8.4s;--x:-32px"></i>
+
+      <div class="cb-content">
+        <div class="cb-logo">
+          <div class="cb-icon">
+            <span class="cb-ripple"></span>
+            <svg viewBox="0 0 512 512" aria-hidden="true">
+              <defs>
+                <linearGradient id="cbg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#FF8A1F"/>
+                  <stop offset="1" stop-color="#F25C00"/>
+                </linearGradient>
+                <linearGradient id="cbs" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+                  <stop offset=".5" stop-color="#fff" stop-opacity=".55"/>
+                  <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                </linearGradient>
+                <clipPath id="cbclip"><rect width="512" height="512" rx="124"/></clipPath>
+                <mask id="cbm" maskUnits="userSpaceOnUse" x="-20" y="-20" width="560" height="560">
+                  <rect x="-20" y="-20" width="560" height="560" fill="#fff"/>
+                  <circle class="cb-bc b1" cx="440" cy="12" r="34" fill="#000"/>
+                  <circle class="cb-bc b2" cx="476" cy="36" r="44" fill="#000"/>
+                  <circle class="cb-bc b3" cx="500" cy="72" r="32" fill="#000"/>
+                </mask>
+              </defs>
+              <g mask="url(#cbm)">
+                <rect class="cb-bg" width="512" height="512" rx="124" fill="url(#cbg)"/>
+                <g clip-path="url(#cbclip)">
+                  <g transform="rotate(20 256 256)">
+                    <rect class="cb-shine" x="-260" y="-120" width="130" height="760" fill="url(#cbs)"/>
+                  </g>
+                </g>
+              </g>
+              <g transform="translate(14,0)">
+                <path class="cb-c" pathLength="100" d="M282.7 186.6 A108 108 0 1 0 282.7 325.4" fill="none" stroke="#fff" stroke-width="58" stroke-linecap="round"/>
+                <path class="cb-fork" d="M357.98 128.35 L357.95 128.02 L357.91 127.69 L357.87 127.37 L357.81 127.05 L357.74 126.73 L357.66 126.41 L357.57 126.10 L357.47 125.79 L357.36 125.48 L357.24 125.17 L357.11 124.87 L356.97 124.58 L356.82 124.29 L356.66 124.00 L356.49 123.72 L356.31 123.44 L356.13 123.18 L355.93 122.91 L355.73 122.66 L355.52 122.41 L355.30 122.16 L355.07 121.93 L354.84 121.70 L354.59 121.48 L354.34 121.27 L354.09 121.07 L353.82 120.87 L353.56 120.69 L353.28 120.51 L353.00 120.34 L352.71 120.18 L352.42 120.03 L352.13 119.89 L351.83 119.76 L351.52 119.64 L351.21 119.53 L350.90 119.43 L350.59 119.34 L350.27 119.26 L349.95 119.19 L349.63 119.13 L349.31 119.09 L348.98 119.05 L348.65 119.02 L348.33 119.01 L348.00 119.00 L347.67 119.01 L347.35 119.02 L347.02 119.05 L346.69 119.09 L346.37 119.13 L346.05 119.19 L345.73 119.26 L345.41 119.34 L345.10 119.43 L344.79 119.53 L344.48 119.64 L344.17 119.76 L343.87 119.89 L343.58 120.03 L343.29 120.18 L343.00 120.34 L342.72 120.51 L342.44 120.69 L342.18 120.87 L341.91 121.07 L341.66 121.27 L341.41 121.48 L341.16 121.70 L340.93 121.93 L340.70 122.16 L340.48 122.41 L340.27 122.66 L340.07 122.91 L339.87 123.18 L339.69 123.44 L339.51 123.72 L339.34 124.00 L339.18 124.29 L339.03 124.58 L338.89 124.87 L338.76 125.17 L338.64 125.48 L338.53 125.79 L338.43 126.10 L338.34 126.41 L338.26 126.73 L338.19 127.05 L338.13 127.37 L338.09 127.69 L338.05 128.02 L338.02 128.35 L338.01 128.67 L338.00 129.00 L338.00 190.00 L338.00 217.00 L338.00 224.00 L338.02 225.34 L338.09 226.68 L338.20 228.02 L338.35 229.35 L338.55 230.68 L338.79 232.00 L339.07 233.31 L339.40 234.61 L339.77 235.90 L340.18 237.18 L340.63 238.44 L341.12 239.69 L341.65 240.92 L342.23 242.13 L342.84 243.33 L343.49 244.50 L344.18 245.65 L344.91 246.78 L345.67 247.88 L346.47 248.96 L347.31 250.01 L348.17 251.03 L349.08 252.03 L350.01 252.99 L350.97 253.92 L351.97 254.83 L352.99 255.69 L354.04 256.53 L355.12 257.33 L356.22 258.09 L357.35 258.82 L358.50 259.51 L359.67 260.16 L360.87 260.77 L362.08 261.35 L363.31 261.88 L364.56 262.37 L365.82 262.82 L367.00 263.20 L367.00 381.00 L367.01 381.39 L367.03 381.78 L367.06 382.18 L367.10 382.57 L367.16 382.95 L367.23 383.34 L367.31 383.72 L367.41 384.11 L367.52 384.48 L367.64 384.86 L367.77 385.23 L367.91 385.59 L368.07 385.95 L368.24 386.31 L368.42 386.66 L368.61 387.00 L368.81 387.34 L369.02 387.67 L369.25 387.99 L369.48 388.31 L369.72 388.61 L369.98 388.91 L370.24 389.20 L370.51 389.49 L370.80 389.76 L371.09 390.02 L371.39 390.28 L371.69 390.52 L372.01 390.75 L372.33 390.98 L372.66 391.19 L373.00 391.39 L373.34 391.58 L373.69 391.76 L374.05 391.93 L374.41 392.09 L374.77 392.23 L375.14 392.36 L375.52 392.48 L375.89 392.59 L376.28 392.69 L376.66 392.77 L377.05 392.84 L377.43 392.90 L377.82 392.94 L378.22 392.97 L378.61 392.99 L379.00 393.00 L379.39 392.99 L379.78 392.97 L380.18 392.94 L380.57 392.90 L380.95 392.84 L381.34 392.77 L381.72 392.69 L382.11 392.59 L382.48 392.48 L382.86 392.36 L383.23 392.23 L383.59 392.09 L383.95 391.93 L384.31 391.76 L384.66 391.58 L385.00 391.39 L385.34 391.19 L385.67 390.98 L385.99 390.75 L386.31 390.52 L386.61 390.28 L386.91 390.02 L387.20 389.76 L387.49 389.49 L387.76 389.20 L388.02 388.91 L388.28 388.61 L388.52 388.31 L388.75 387.99 L388.98 387.67 L389.19 387.34 L389.39 387.00 L389.58 386.66 L389.76 386.31 L389.93 385.95 L390.09 385.59 L390.23 385.23 L390.36 384.86 L390.48 384.48 L390.59 384.11 L390.69 383.72 L390.77 383.34 L390.84 382.95 L390.90 382.57 L390.94 382.18 L390.97 381.78 L390.99 381.39 L391.00 381.00 L391.00 263.20 L392.18 262.82 L393.44 262.37 L394.69 261.88 L395.92 261.35 L397.13 260.77 L398.33 260.16 L399.50 259.51 L400.65 258.82 L401.78 258.09 L402.88 257.33 L403.96 256.53 L405.01 255.69 L406.03 254.83 L407.03 253.92 L407.99 252.99 L408.92 252.03 L409.83 251.03 L410.69 250.01 L411.53 248.96 L412.33 247.88 L413.09 246.78 L413.82 245.65 L414.51 244.50 L415.16 243.33 L415.77 242.13 L416.35 240.92 L416.88 239.69 L417.37 238.44 L417.82 237.18 L418.23 235.90 L418.60 234.61 L418.93 233.31 L419.21 232.00 L419.45 230.68 L419.65 229.35 L419.80 228.02 L419.91 226.68 L419.98 225.34 L420.00 224.00 L420.00 217.00 L420.00 190.00 L420.00 129.00 L419.99 128.67 L419.98 128.35 L419.95 128.02 L419.91 127.69 L419.87 127.37 L419.81 127.05 L419.74 126.73 L419.66 126.41 L419.57 126.10 L419.47 125.79 L419.36 125.48 L419.24 125.17 L419.11 124.87 L418.97 124.58 L418.82 124.29 L418.66 124.00 L418.49 123.72 L418.31 123.44 L418.13 123.18 L417.93 122.91 L417.73 122.66 L417.52 122.41 L417.30 122.16 L417.07 121.93 L416.84 121.70 L416.59 121.48 L416.34 121.27 L416.09 121.07 L415.82 120.87 L415.56 120.69 L415.28 120.51 L415.00 120.34 L414.71 120.18 L414.42 120.03 L414.13 119.89 L413.83 119.76 L413.52 119.64 L413.21 119.53 L412.90 119.43 L412.59 119.34 L412.27 119.26 L411.95 119.19 L411.63 119.13 L411.31 119.09 L410.98 119.05 L410.65 119.02 L410.33 119.01 L410.00 119.00 L409.67 119.01 L409.35 119.02 L409.02 119.05 L408.69 119.09 L408.37 119.13 L408.05 119.19 L407.73 119.26 L407.41 119.34 L407.10 119.43 L406.79 119.53 L406.48 119.64 L406.17 119.76 L405.87 119.89 L405.58 120.03 L405.29 120.18 L405.00 120.34 L404.72 120.51 L404.44 120.69 L404.18 120.87 L403.91 121.07 L403.66 121.27 L403.41 121.48 L403.16 121.70 L402.93 121.93 L402.70 122.16 L402.48 122.41 L402.27 122.66 L402.07 122.91 L401.87 123.18 L401.69 123.44 L401.51 123.72 L401.34 124.00 L401.18 124.29 L401.03 124.58 L400.89 124.87 L400.76 125.17 L400.64 125.48 L400.53 125.79 L400.43 126.10 L400.34 126.41 L400.26 126.73 L400.19 127.05 L400.13 127.37 L400.09 127.69 L400.05 128.02 L400.02 128.35 L400.01 128.67 L400.00 129.00 L400.00 190.00 L389.00 190.00 L389.00 129.00 L388.99 128.67 L388.98 128.35 L388.95 128.02 L388.91 127.69 L388.87 127.37 L388.81 127.05 L388.74 126.73 L388.66 126.41 L388.57 126.10 L388.47 125.79 L388.36 125.48 L388.24 125.17 L388.11 124.87 L387.97 124.58 L387.82 124.29 L387.66 124.00 L387.49 123.72 L387.31 123.44 L387.13 123.18 L386.93 122.91 L386.73 122.66 L386.52 122.41 L386.30 122.16 L386.07 121.93 L385.84 121.70 L385.59 121.48 L385.34 121.27 L385.09 121.07 L384.82 120.87 L384.56 120.69 L384.28 120.51 L384.00 120.34 L383.71 120.18 L383.42 120.03 L383.13 119.89 L382.83 119.76 L382.52 119.64 L382.21 119.53 L381.90 119.43 L381.59 119.34 L381.27 119.26 L380.95 119.19 L380.63 119.13 L380.31 119.09 L379.98 119.05 L379.65 119.02 L379.33 119.01 L379.00 119.00 L378.67 119.01 L378.35 119.02 L378.02 119.05 L377.69 119.09 L377.37 119.13 L377.05 119.19 L376.73 119.26 L376.41 119.34 L376.10 119.43 L375.79 119.53 L375.48 119.64 L375.17 119.76 L374.87 119.89 L374.58 120.03 L374.29 120.18 L374.00 120.34 L373.72 120.51 L373.44 120.69 L373.18 120.87 L372.91 121.07 L372.66 121.27 L372.41 121.48 L372.16 121.70 L371.93 121.93 L371.70 122.16 L371.48 122.41 L371.27 122.66 L371.07 122.91 L370.87 123.18 L370.69 123.44 L370.51 123.72 L370.34 124.00 L370.18 124.29 L370.03 124.58 L369.89 124.87 L369.76 125.17 L369.64 125.48 L369.53 125.79 L369.43 126.10 L369.34 126.41 L369.26 126.73 L369.19 127.05 L369.13 127.37 L369.09 127.69 L369.05 128.02 L369.02 128.35 L369.01 128.67 L369.00 129.00 L369.00 190.00 L358.00 190.00 L358.00 129.00 L357.99 128.67 L357.98 128.35 Z" fill="#fff"/>
+              </g>
+              <g class="cb-crumbs">
+                <circle class="cr" style="--tx:34px;--ty:-46px" cx="470" cy="40" r="7"/>
+                <circle class="cr" style="--tx:62px;--ty:-8px" cx="480" cy="52" r="5"/>
+                <circle class="cr" style="--tx:18px;--ty:-70px" cx="456" cy="28" r="5"/>
+                <circle class="cr" style="--tx:58px;--ty:-38px" cx="488" cy="30" r="4"/>
+                <circle class="cr" style="--tx:44px;--ty:22px" cx="486" cy="64" r="6"/>
+              </g>
+            </svg>
+          </div>
+          <div class="cb-words">
+            <div class="cb-words-in">
+              <div class="cb-words-row">
+                <span class="cb-word">
+                  <svg viewBox="0 -164.5 596.1 205" aria-hidden="true">
+                    <path class="cb-l" style="--i:0" d="M71.734 1.958Q57.672 1.958 45.657 -2.937Q33.642 -7.832 24.653 -16.732Q15.664 -25.632 10.68 -37.469Q5.696 -49.306 5.696 -63.012Q5.696 -76.718 10.68 -88.555Q15.664 -100.392 24.564 -109.114Q33.464 -117.836 45.479 -122.731Q57.494 -127.626 71.556 -127.626Q86.508 -127.626 98.167 -122.82Q109.826 -118.014 118.548 -109.648L99.858 -90.78Q94.874 -96.12 87.843 -99.146Q80.812 -102.172 71.556 -102.172Q63.368 -102.172 56.515 -99.413Q49.662 -96.654 44.767 -91.492Q39.872 -86.33 37.113 -79.032Q34.354 -71.734 34.354 -63.012Q34.354 -54.112 37.113 -46.814Q39.872 -39.516 44.767 -34.354Q49.662 -29.192 56.515 -26.344Q63.368 -23.496 71.556 -23.496Q81.168 -23.496 88.288 -26.522Q95.408 -29.548 100.57 -34.888L119.438 -16.02Q110.36 -7.654 98.701 -2.848Q87.042 1.958 71.734 1.958Z" fill="#C2410C"/>
+                    <path class="cb-l" style="--i:1" d="M170.906 1.958Q157.556 1.958 146.787 -4.005Q136.018 -9.968 129.788 -20.292Q123.558 -30.616 123.558 -43.432Q123.558 -56.248 129.788 -66.394Q136.018 -76.54 146.698 -82.503Q157.378 -88.466 170.906 -88.466Q184.434 -88.466 195.114 -82.592Q205.794 -76.718 212.024 -66.483Q218.254 -56.248 218.254 -43.432Q218.254 -30.616 212.024 -20.292Q205.794 -9.968 195.114 -4.005Q184.434 1.958 170.906 1.958ZM170.906 -22.784Q176.78 -22.784 181.23 -25.365Q185.68 -27.946 188.083 -32.663Q190.486 -37.38 190.486 -43.432Q190.486 -49.484 187.994 -54.023Q185.502 -58.562 181.141 -61.143Q176.78 -63.724 170.906 -63.724Q165.21 -63.724 160.76 -61.143Q156.31 -58.562 153.818 -53.934Q151.326 -49.306 151.326 -43.254Q151.326 -37.38 153.818 -32.663Q156.31 -27.946 160.76 -25.365Q165.21 -22.784 170.906 -22.784Z" fill="#C2410C"/>
+                    <path class="cb-l" style="--i:2" d="M228.782 0.0V-129.228H256.016V0.0Z" fill="#C2410C"/>
+                    <path class="cb-l" style="--i:3" d="M272.24 0.0V-129.228H299.474V0.0Z" fill="#C2410C"/>
+                    <path class="cb-l" style="--i:4" d="M358.418 1.958Q344.356 1.958 333.409 -3.827Q322.462 -9.612 316.232 -19.936Q310.002 -30.26 310.002 -43.254Q310.002 -56.248 316.143 -66.483Q322.284 -76.718 332.786 -82.592Q343.288 -88.466 356.46 -88.466Q369.276 -88.466 379.066 -82.948Q388.856 -77.43 394.463 -67.64Q400.07 -57.85 400.07 -45.212Q400.07 -42.898 399.803 -40.317Q399.536 -37.736 398.824 -34.354L324.242 -34.176V-52.866L387.254 -53.044L375.506 -45.212Q375.328 -52.688 373.192 -57.583Q371.056 -62.478 366.873 -65.059Q362.69 -67.64 356.638 -67.64Q350.23 -67.64 345.513 -64.703Q340.796 -61.766 338.215 -56.426Q335.634 -51.086 335.634 -43.432Q335.634 -35.778 338.393 -30.349Q341.152 -24.92 346.225 -21.983Q351.298 -19.046 358.24 -19.046Q364.648 -19.046 369.81 -21.271Q374.972 -23.496 378.888 -27.946L393.84 -12.994Q387.432 -5.518 378.354 -1.78Q369.276 1.958 358.418 1.958Z" fill="#C2410C"/>
+                    <path class="cb-l" style="--i:5" d="M446.91 38.804Q432.67 38.804 421.901 33.909Q411.132 29.014 404.902 20.114L421.634 3.382Q426.262 8.9 432.047 11.748Q437.832 14.596 446.02 14.596Q456.166 14.596 461.951 9.612Q467.736 4.628 467.736 -4.45V-26.522L472.364 -45.39L468.27 -64.258V-86.508H494.97V-5.162Q494.97 8.188 488.74 17.978Q482.51 27.768 471.652 33.286Q460.794 38.804 446.91 38.804ZM445.664 -2.67Q433.738 -2.67 424.482 -8.366Q415.226 -14.062 409.886 -23.852Q404.546 -33.642 404.546 -45.568Q404.546 -57.672 409.886 -67.373Q415.226 -77.074 424.482 -82.681Q433.738 -88.288 445.664 -88.288Q454.564 -88.288 461.595 -84.995Q468.626 -81.702 472.987 -75.739Q477.348 -69.776 477.882 -61.944V-29.014Q477.348 -21.36 472.987 -15.397Q468.626 -9.434 461.506 -6.052Q454.386 -2.67 445.664 -2.67ZM450.826 -26.878Q456.522 -26.878 460.705 -29.37Q464.888 -31.862 467.113 -36.045Q469.338 -40.228 469.338 -45.568Q469.338 -50.908 467.113 -55.18Q464.888 -59.452 460.705 -61.944Q456.522 -64.436 450.826 -64.436Q445.308 -64.436 441.036 -61.944Q436.764 -59.452 434.45 -55.18Q432.136 -50.908 432.136 -45.568Q432.136 -40.584 434.45 -36.223Q436.764 -31.862 440.947 -29.37Q445.13 -26.878 450.826 -26.878Z" fill="#C2410C"/>
+                    <path class="cb-l" style="--i:6" d="M553.914 1.958Q539.852 1.958 528.905 -3.827Q517.958 -9.612 511.728 -19.936Q505.498 -30.26 505.498 -43.254Q505.498 -56.248 511.639 -66.483Q517.78 -76.718 528.282 -82.592Q538.784 -88.466 551.956 -88.466Q564.772 -88.466 574.562 -82.948Q584.352 -77.43 589.959 -67.64Q595.566 -57.85 595.566 -45.212Q595.566 -42.898 595.299 -40.317Q595.032 -37.736 594.32 -34.354L519.738 -34.176V-52.866L582.75 -53.044L571.002 -45.212Q570.824 -52.688 568.688 -57.583Q566.552 -62.478 562.369 -65.059Q558.186 -67.64 552.134 -67.64Q545.726 -67.64 541.009 -64.703Q536.292 -61.766 533.711 -56.426Q531.13 -51.086 531.13 -43.432Q531.13 -35.778 533.889 -30.349Q536.648 -24.92 541.721 -21.983Q546.794 -19.046 553.736 -19.046Q560.144 -19.046 565.306 -21.271Q570.468 -23.496 574.384 -27.946L589.336 -12.994Q582.928 -5.518 573.85 -1.78Q564.772 1.958 553.914 1.958Z" fill="#C2410C"/>
+                  </svg>
+                </span>
+                <span class="cb-word">
+                  <svg viewBox="0 -164.5 395.6 205" aria-hidden="true">
+                    <path class="cb-l" style="--i:7" d="M33.464 0.0V-21.716H63.012Q71.2 -21.716 75.828 -26.522Q80.456 -31.328 80.456 -38.27Q80.456 -43.076 78.32 -46.814Q76.184 -50.552 72.357 -52.688Q68.53 -54.824 63.012 -54.824H33.464V-76.006H60.698Q67.64 -76.006 71.912 -79.477Q76.184 -82.948 76.184 -90.068Q76.184 -97.01 71.912 -100.481Q67.64 -103.952 60.698 -103.952H33.464V-125.668H66.038Q78.142 -125.668 86.597 -121.218Q95.052 -116.768 99.502 -109.292Q103.952 -101.816 103.952 -92.738Q103.952 -81.168 96.476 -73.158Q89.0 -65.148 74.404 -62.122L75.116 -71.556Q90.958 -68.53 99.591 -59.274Q108.224 -50.018 108.224 -36.49Q108.224 -26.166 103.151 -17.889Q98.078 -9.612 88.555 -4.806Q79.032 0.0 65.682 0.0ZM12.104 0.0V-125.668H39.694V0.0Z" fill="#F97316"/>
+                    <path class="cb-l" style="--i:8" d="M120.71 0.0V-86.508H147.944V0.0ZM134.416 -98.434Q128.008 -98.434 123.825 -102.795Q119.642 -107.156 119.642 -113.386Q119.642 -119.794 123.825 -124.066Q128.008 -128.338 134.416 -128.338Q140.824 -128.338 144.918 -124.066Q149.012 -119.794 149.012 -113.386Q149.012 -107.156 144.918 -102.795Q140.824 -98.434 134.416 -98.434Z" fill="#F97316"/>
+                    <path class="cb-l" style="--i:9" d="M176.45 0.0V-122.286H203.684V0.0ZM156.87 -63.368V-86.508H223.264V-63.368Z" fill="#F97316"/>
+                    <path class="cb-l" style="--i:10" d="M274.91 1.958Q260.848 1.958 249.901 -3.827Q238.954 -9.612 232.724 -19.936Q226.494 -30.26 226.494 -43.254Q226.494 -56.248 232.635 -66.483Q238.776 -76.718 249.278 -82.592Q259.78 -88.466 272.952 -88.466Q285.768 -88.466 295.558 -82.948Q305.348 -77.43 310.955 -67.64Q316.562 -57.85 316.562 -45.212Q316.562 -42.898 316.295 -40.317Q316.028 -37.736 315.316 -34.354L240.734 -34.176V-52.866L303.746 -53.044L291.998 -45.212Q291.82 -52.688 289.684 -57.583Q287.548 -62.478 283.365 -65.059Q279.182 -67.64 273.13 -67.64Q266.722 -67.64 262.005 -64.703Q257.288 -61.766 254.707 -56.426Q252.126 -51.086 252.126 -43.432Q252.126 -35.778 254.885 -30.349Q257.644 -24.92 262.717 -21.983Q267.79 -19.046 274.732 -19.046Q281.14 -19.046 286.302 -21.271Q291.464 -23.496 295.38 -27.946L310.332 -12.994Q303.924 -5.518 294.846 -1.78Q285.768 1.958 274.91 1.958Z" fill="#F97316"/>
+                    <path class="cb-l" style="--i:11" d="M358.24 2.136Q350.586 2.136 343.199 0.178Q335.812 -1.78 329.493 -5.429Q323.174 -9.078 318.724 -13.884L334.21 -29.548Q338.482 -24.92 344.356 -22.339Q350.23 -19.758 357.172 -19.758Q361.978 -19.758 364.559 -21.182Q367.14 -22.606 367.14 -25.098Q367.14 -28.302 364.025 -29.993Q360.91 -31.684 356.104 -33.019Q351.298 -34.354 345.958 -35.956Q340.618 -37.558 335.812 -40.406Q331.006 -43.254 327.98 -48.327Q324.954 -53.4 324.954 -61.232Q324.954 -69.598 329.226 -75.739Q333.498 -81.88 341.33 -85.44Q349.162 -89.0 359.664 -89.0Q370.7 -89.0 380.045 -85.173Q389.39 -81.346 395.264 -73.87L379.778 -58.206Q375.684 -63.012 370.611 -64.97Q365.538 -66.928 360.732 -66.928Q356.104 -66.928 353.79 -65.593Q351.476 -64.258 351.476 -61.766Q351.476 -59.096 354.502 -57.494Q357.528 -55.892 362.334 -54.646Q367.14 -53.4 372.48 -51.62Q377.82 -49.84 382.626 -46.814Q387.432 -43.788 390.458 -38.715Q393.484 -33.642 393.484 -25.454Q393.484 -12.816 383.961 -5.34Q374.438 2.136 358.24 2.136Z" fill="#F97316"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </div>
+          <!-- Sparkles -->
+          <svg class="cb-spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.6 6.6 17.4 11.4 24 12C17.4 12.6 12.6 17.4 12 24C11.4 17.4 6.6 12.6 0 12C6.6 11.4 11.4 6.6 12 0Z"/></svg>
+          <svg class="cb-spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.6 6.6 17.4 11.4 24 12C17.4 12.6 12.6 17.4 12 24C11.4 17.4 6.6 12.6 0 12C6.6 11.4 11.4 6.6 12 0Z"/></svg>
+          <svg class="cb-spark s3" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.6 6.6 17.4 11.4 24 12C17.4 12.6 12.6 17.4 12 24C11.4 17.4 6.6 12.6 0 12C6.6 11.4 11.4 6.6 12 0Z"/></svg>
+          <svg class="cb-spark s4" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C12.6 6.6 17.4 11.4 24 12C17.4 12.6 12.6 17.4 12 24C11.4 17.4 6.6 12.6 0 12C6.6 11.4 11.4 6.6 12 0Z"/></svg>
+        </div>
+
+        <div class="cb-meter">
+          <div class="cb-row">
+            <div class="cb-bar"><i id="cb-fill"></i></div>
+            <span class="cb-pct" id="cb-pct">0%</span>
+          </div>
+          <p class="cb-tip" id="cb-tip">Warming up the handi…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MOCK APP SCREEN ================= -->
+  <main class="app-viewport">
+    <header class="app-header">
+      <div class="app-brand">
+        <div class="app-brand-tile">
+          <svg viewBox="0 0 512 512">
+            <path d="M282.7 186.6 A108 108 0 1 0 282.7 325.4" fill="none" stroke="#fff" stroke-width="58" stroke-linecap="round"/>
+            <circle cx="379" cy="256" r="28" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="app-title-group">
+          <h2>College Bites</h2>
+          <span class="app-gate-badge">📍 Amrita AP · Gate 3</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="app-hero-card">
+      <h1>Hot food, at Gate 3</h1>
+      <p>Order biryani, fried rice & noodles from local kitchens. Pay cash or UPI on delivery.</p>
+    </div>
+
+    <div class="app-section-title">
+      <span>What's on your mind?</span>
+    </div>
+    <div class="app-rail">
+      <div class="app-food-card">
+        <div class="app-food-emoji">🍗</div>
+        <div class="app-food-name">Biryani</div>
+      </div>
+      <div class="app-food-card">
+        <div class="app-food-emoji">🍚</div>
+        <div class="app-food-name">Fried Rice</div>
+      </div>
+      <div class="app-food-card">
+        <div class="app-food-emoji">🥢</div>
+        <div class="app-food-name">Noodles</div>
+      </div>
+    </div>
+
+    <div class="app-section-title">
+      <span>Restaurants near campus</span>
+    </div>
+    <div class="app-restaurant-card">
+      <div class="app-rest-icon">🍛</div>
+      <div class="app-rest-details">
+        <h3>Clg Bites Biryani Nation</h3>
+        <p>Biryani · Starters · Fast Food</p>
+      </div>
+      <span class="app-time-chip">60 min</span>
+    </div>
+
+    <div class="app-restaurant-card">
+      <div class="app-rest-icon">🍲</div>
+      <div class="app-rest-details">
+        <h3>Triangle Food Court</h3>
+        <p>South & North Indian · Chinese</p>
+      </div>
+      <span class="app-time-chip">40 min</span>
+    </div>
+
+    <div class="app-restaurant-card">
+      <div class="app-rest-icon">🍳</div>
+      <div class="app-rest-details">
+        <h3>Local Home Kitchen</h3>
+        <p>Homestyle Meals · Tiffins</p>
+      </div>
+      <span class="app-time-chip">40 min</span>
+    </div>
+  </main>
+
+  <!-- ================= INTERACTIVE CONTROLLER ================= -->
+  <aside class="control-deck">
+    <button class="btn-action" id="btn-replay">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      Replay Preloader
+    </button>
+    <div class="deck-divider"></div>
+    <button class="btn-pill" id="btn-speed" title="Toggle animation speed">Speed: 1x</button>
+    <button class="btn-pill" id="btn-theme" title="Toggle theme preview">Theme: Sand</button>
+  </aside>
+
+  <!-- ================= PRELOADER SCRIPT ENGINE ================= -->
+  <script>
+    (function () {
+      var speedMultiplier = 1;
+      var MIN_MS = 3800;
+      var MAX_MS = 10000;
+      var root = document.documentElement;
+      var preloaderEl = document.getElementById('cb-preloader');
+      var fillEl = document.getElementById('cb-fill');
+      var pctEl = document.getElementById('cb-pct');
+      var tipEl = document.getElementById('cb-tip');
+      var msgs = [
+        'Warming up the handi…',
+        'Packing your biryani…',
+        'Adding the extra raita…',
+        'Almost at your door!',
+        'Pickup ready at Gate 3!'
+      ];
+      var swapTimer = null;
+      var animFrameId = null;
+
+      function startPreloader() {
+        if (!preloaderEl) return;
+
+        // Reset classes and state
+        root.classList.add('cb-loading');
+        root.classList.remove('cb-ready');
+        preloaderEl.classList.remove('cb-done');
+        preloaderEl.style.display = 'block';
+
+        if (fillEl) fillEl.style.setProperty('--p', '0');
+        if (pctEl) pctEl.textContent = '0%';
+        if (tipEl) tipEl.textContent = msgs[0];
+
+        // Trigger reflow for fresh CSS animations
+        preloaderEl.querySelectorAll('.cb-bg, .cb-c, .cb-fork, .cb-shine, .cb-bc, .cb-crumbs .cr, .cb-words, .cb-l, .cb-spark, .cb-meter, .cb-ripple').forEach(function(el) {
+          el.style.animation = 'none';
+          el.offsetHeight; /* trigger reflow */
+          el.style.animation = '';
+        });
+
+        var mi = 0;
+        var p = 0;
+        var finished = false;
+        var start = performance.now();
+        var adjustedMin = MIN_MS / speedMultiplier;
+
+        if (swapTimer) clearInterval(swapTimer);
+        swapTimer = setInterval(function () {
+          if (finished) return;
+          mi = Math.min(mi + 1, msgs.length - 1);
+          tipEl.classList.add('cb-swap');
+          setTimeout(function () {
+            tipEl.textContent = msgs[mi];
+            tipEl.classList.remove('cb-swap');
+          }, 240);
+          if (mi === msgs.length - 1) clearInterval(swapTimer);
+        }, 1050 / speedMultiplier);
+
+        function setProgress(v) {
+          fillEl.style.setProperty('--p', v.toFixed(4));
+          pctEl.textContent = Math.round(v * 100) + '%';
+        }
+
+        function finishPreloader() {
+          if (finished) return;
+          finished = true;
+          setProgress(1);
+
+          setTimeout(function () {
+            preloaderEl.classList.add('cb-done');
+            setTimeout(function () {
+              root.classList.remove('cb-loading');
+              root.classList.add('cb-ready');
+            }, 750);
+            setTimeout(function () {
+              preloaderEl.style.display = 'none';
+            }, 2100);
+          }, 450);
+        }
+
+        (function tick(now) {
+          var elapsed = now - start;
+          var x = Math.min(Math.max((elapsed - (1400 / speedMultiplier)) / (adjustedMin - (1400 / speedMultiplier)), 0), 1);
+          var eased = (1 - Math.cos(Math.PI * x)) / 2;
+          var target = eased;
+          p += (target - p) * 0.16;
+          setProgress(p);
+
+          if (elapsed >= adjustedMin && p > 0.985) {
+            return finishPreloader();
+          }
+          animFrameId = requestAnimationFrame(tick);
+        })(start);
+      }
+
+      // Initial run
+      startPreloader();
+
+      // Controller: Replay
+      document.getElementById('btn-replay').addEventListener('click', function () {
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        if (swapTimer) clearInterval(swapTimer);
+        startPreloader();
+      });
+
+      // Controller: Speed toggle
+      var speedBtn = document.getElementById('btn-speed');
+      var speeds = [1, 0.7, 1.5];
+      var speedLabels = ['1x', '0.7x Slow-mo', '1.5x Fast'];
+      var speedIdx = 0;
+      speedBtn.addEventListener('click', function () {
+        speedIdx = (speedIdx + 1) % speeds.length;
+        speedMultiplier = speeds[speedIdx];
+        speedBtn.textContent = 'Speed: ' + speedLabels[speedIdx];
+        document.getElementById('btn-replay').click();
+      });
+
+      // Controller: Theme toggle
+      var themeBtn = document.getElementById('btn-theme');
+      var themes = ['light', 'dark'];
+      var themeLabels = ['Sand', 'Vice Dusk'];
+      var themeIdx = 0;
+      themeBtn.addEventListener('click', function () {
+        themeIdx = (themeIdx + 1) % themes.length;
+        root.setAttribute('data-theme', themes[themeIdx]);
+        themeBtn.textContent = 'Theme: ' + themeLabels[themeIdx];
+      });
+    })();
+  </script>
+</body>
+</html>

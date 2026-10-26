@@ -44,7 +44,7 @@ export function MenuView({
 }: {
  restaurant: Restaurant;
  sections: MenuSection[];
- profilePhone: string;
+ profilePhone: string | null;
  orderingEnabled: boolean;
  closedChip?: string;
  closedNote?: string;

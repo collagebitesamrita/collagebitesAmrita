@@ -17,7 +17,7 @@ export default function PrivacyPage() {
  <div className="mt-6 flex flex-col gap-4 leading-relaxed text-muted-foreground">
  <p>
  College Bites collects your name, phone number, and email (via Google sign-in) to process
- food orders for SRM University AP students.
+ food orders for Amrita University AP students.
  </p>
  <p>We don&apos;t sell or share this data with third parties.</p>
  <p>Orders are shared with partner restaurants to fulfill delivery.</p>
@@ -31,8 +31,8 @@ export default function PrivacyPage() {
  </p>
  <p>
  Contact{" "}
- <a href="mailto:collegebitessrm@gmail.com" className="font-semibold text-primary hover:underline">
- collegebitessrm@gmail.com
+ <a href="mailto:collegebitesamrita@gmail.com" className="font-semibold text-primary hover:underline">
+ collegebitesamrita@gmail.com
  </a>{" "}
  with any questions.
  </p>

@@ -17,10 +17,10 @@ export default function TermsPage() {
 
  <div className="mt-6 flex flex-col gap-4 leading-relaxed text-muted-foreground">
  <p>
- College Bites is a food ordering platform for SRM University AP students, connecting
+ College Bites is a food ordering platform for Amrita University AP students, connecting
  students with local partner restaurants.
  </p>
- <p>Payment is on delivery only, by cash or UPI when you collect; nothing is paid in the app. Orders are handed over at Gate 3, SRM University AP.</p>
+ <p>Payment is on delivery only, by cash or UPI when you collect; nothing is paid in the app. Orders are handed over at Gate 3, Amrita University AP.</p>
  <p>
  By using this service you agree to provide accurate contact information and be present
  for pickup at the agreed time.

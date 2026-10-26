@@ -44,7 +44,8 @@ export async function createProfile(
  // 23505 on the primary key = the row already exists (e.g. a double
  // submit in another tab) — they're onboarded, so just continue.
  if (error && !(error.code === "23505" && error.message.includes("users_pkey"))) {
- return { formError: "Couldn't save your details. Mind trying again?" };
+ console.error("Profile insert failed:", { error, userId: user.id, email: user.email, fullName, phone });
+		 return { formError: `Couldn't save your details: ${error.message}` };
  }
 
  redirect("/");

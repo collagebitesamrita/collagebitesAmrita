@@ -1,6 +1,6 @@
 # College Bites
 
-Crave. Click. Campus. Food ordering for SRM University AP students — browse
+Crave. Click. Campus. Food ordering for Amrita University AP students — browse
 partner restaurants, order, and collect at Gate 3. Cash (or UPI) on pickup; no online
 payments.
 

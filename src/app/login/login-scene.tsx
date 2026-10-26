@@ -140,7 +140,7 @@ export function LoginScene() {
  {CARDS.map((card) => (
  <div
  key={card.src}
- className={cn("login-card absolute z-20 aspect-[4/5] overflow-hidden rounded-[1.25rem] bg-secondary", card.className)}
+ className={cn("login-card group absolute z-20 aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-secondary", card.className)}
  style={card.style as CSSProperties}
  >
  <Image
@@ -152,8 +152,9 @@ export function LoginScene() {
  // frame would sit in the sky), the big two at high priority.
  loading="eager"
  fetchPriority={card.eager ? "high" : undefined}
- className="object-cover"
+ className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
  />
+ <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/15 pointer-events-none" />
  </div>
  ))}
  </div>

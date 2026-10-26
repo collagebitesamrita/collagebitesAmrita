@@ -2,4 +2,4 @@
 export const SUPPORT_PHONE = "+919989955833";
 
 /** The College Bites WhatsApp channel (offers, open / closed, new dishes) — Home header, Profile, About. */
-export const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029VbDNWZPHrDZaWYZTjK21";
+export const WHATSAPP_CHANNEL_URL = "https://whatsapp.com/channel/0029Vb9wGtL5Ejy7Fsqcgn19";

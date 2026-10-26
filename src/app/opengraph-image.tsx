@@ -19,7 +19,7 @@ import { SITE_URL } from "@/lib/site";
  * reliably (it often drops previews that large); the JPEG is ~100 KB.
  */
 
-export const alt = "College Bites: food delivery for SRM University AP students, pickup at Gate 3";
+export const alt = "College Bites: food delivery for Amrita University AP students, pickup at Gate 3";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/jpeg";
 
@@ -63,7 +63,7 @@ export default async function OpengraphImage() {
  <div style={{ marginTop: 28, fontSize: 84, fontWeight: 800, letterSpacing: -2 }}>College Bites</div>
  <div style={{ marginTop: 6, fontSize: 34, color: PURPLE, fontWeight: 700 }}>Crave. Click. Campus.</div>
  <div style={{ marginTop: 22, fontSize: 28, lineHeight: 1.35, maxWidth: 560, color: MUTED }}>
- Biryani, fried rice, noodles and starters from kitchens near SRM University AP. Collect at Gate 3, pay on delivery.
+ Biryani, fried rice, noodles and starters from kitchens near Amrita University AP. Collect at Gate 3, pay on delivery.
  </div>
  <div
  style={{

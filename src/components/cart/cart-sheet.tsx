@@ -44,7 +44,7 @@ export function CartSheet({
  open: boolean;
  onOpenChange: (open: boolean) => void;
  /** Stored "+91XXXXXXXXXX" — the default contact number for the order. */
- profilePhone: string;
+ profilePhone: string | null;
  /** Campus-wide kill switch — disables the "Place order" button when off. */
  orderingEnabled: boolean;
  closedNote?: string;
@@ -84,15 +84,19 @@ export function CartSheet({
  {empty ? (
  <EmptyCart onBrowse={() => onOpenChange(false)} />
  ) : (
- <CartContents
- cart={cart}
- profilePhone={profilePhone}
- orderingEnabled={orderingEnabled}
- closedNote={closedNote}
- spiceLevel={spiceLevel}
- offers={offers}
- onPlaced={() => onOpenChange(false)}
- />
+  profilePhone === null ? (
+  <GuestCheckout onBrowse={() => onOpenChange(false)} cart={cart} />
+  ) : (
+  <CartContents
+  cart={cart}
+  profilePhone={profilePhone}
+  orderingEnabled={orderingEnabled}
+  closedNote={closedNote}
+  spiceLevel={spiceLevel}
+  offers={offers}
+  onPlaced={() => onOpenChange(false)}
+  />
+  )
  )}
  </SheetContent>
  </Sheet>
@@ -121,6 +125,69 @@ function EmptyCart({ onBrowse }: { onBrowse: () => void }) {
  );
 }
 
+/**
+ * Shown in the cart sheet when the user is signed out: items and the total
+ * are visible, but checkout requires an account. The cart lives in
+ * localStorage so it survives the sign-in round-trip.
+ */
+function GuestCheckout({ cart, onBrowse }: { cart: Cart; onBrowse: () => void }) {
+ const { amount } = cartTotals(cart);
+ return (
+ <div className="flex flex-col">
+ <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+ <ul>
+ {cart.lines.map((line) => (
+ <CartLineRow key={line.dishId} line={line} restaurantName={cart.restaurantName} />
+ ))}
+ </ul>
+ <div className="mt-4 rounded-2xl border bg-card px-5 py-4 shadow-card">
+ <dl className="space-y-1.5">
+ <div className="flex justify-between text-muted-foreground">
+ <dt>Item total</dt>
+ <dd className="tabular-nums">{formatRupees(amount)}</dd>
+ </div>
+ <div className="flex items-center justify-between text-muted-foreground">
+ <dt>Delivery to Gate 3</dt>
+ <dd className="rounded-full bg-success-soft px-2.5 py-0.5 text-sm font-semibold text-success">Free</dd>
+ </div>
+ <div className="flex items-baseline justify-between border-t border-dashed pt-2.5">
+ <dt className="font-semibold">Total</dt>
+ <dd key={amount} className="font-heading text-3xl font-bold tabular-nums text-primary">
+ {formatRupees(amount)}
+ </dd>
+ </div>
+ </dl>
+ </div>
+ </div>
+
+ <footer className="border-t bg-background px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+ <Link
+ href="/login"
+ className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-lg font-bold text-primary-foreground outline-none transition-all hover:brightness-110 focus-visible:ring-3 focus-visible:ring-ring/80"
+ >
+ <svg viewBox="0 0 24 24" className="size-5 shrink-0" aria-hidden="true">
+ <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46a5.52 5.52 0 0 1-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.81Z" />
+ <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.88-3.01c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.28v3.11A12 12 0 0 0 12 24Z" />
+ <path fill="#FBBC05" d="M5.29 14.28A7.2 7.2 0 0 1 4.91 12c0-.79.14-1.56.38-2.28V6.61H1.28a12 12 0 0 0 0 10.78l4.01-3.11Z" />
+ <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.59 1.8l3.44-3.44A11.5 11.5 0 0 0 12 0 12 12 0 0 0 1.28 6.61l4.01 3.11C6.23 6.88 8.88 4.77 12 4.77Z" />
+ </svg>
+ Sign in to order
+ </Link>
+ <p className="mt-2.5 text-center text-sm text-muted-foreground">
+ Your cart is saved — sign in to check out.
+ </p>
+ <button
+ type="button"
+ onClick={onBrowse}
+ className="mt-1 text-sm font-medium text-muted-foreground hover:underline"
+ >
+ Continue browsing
+ </button>
+ </footer>
+ </div>
+ );
+}
+
 function CartContents({
  cart,
  profilePhone,
@@ -131,7 +198,7 @@ function CartContents({
  onPlaced,
 }: {
  cart: Cart;
- profilePhone: string;
+ profilePhone: string | null;
  orderingEnabled: boolean;
  closedNote?: string;
  spiceLevel: number | null;
@@ -140,7 +207,7 @@ function CartContents({
 }) {
  const router = useRouter();
  const [notes, setNotes] = useState("");
- const [contactPhone, setContactPhone] = useState(profilePhone);
+ const [contactPhone, setContactPhone] = useState(profilePhone ?? "");
  const [error, setError] = useState<string | null>(null);
  const [placing, startPlacing] = useTransition();
  const [offer, setOffer] = useState<OfferKey | null>(null);
