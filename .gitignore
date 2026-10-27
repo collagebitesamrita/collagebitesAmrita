@@ -45,3 +45,5 @@ all_migrations*
 *.tsbuildinfo
 next-env.d.ts
 /.claude
+*dev-vapid*
+*generated-vapid*

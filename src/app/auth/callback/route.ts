@@ -5,19 +5,26 @@ import { createClient } from "@/lib/supabase/server";
 // session cookie, then send the user on. Whether they still need the
 // first-login form is decided by the app, not here.
 export async function GET(request: NextRequest) {
- const { searchParams, origin } = request.nextUrl;
- const code = searchParams.get("code");
+	const requestUrl = new URL(request.url);
+	const code = requestUrl.searchParams.get("code");
+	const forwardedHost = request.headers.get("x-forwarded-host");
+	const isLocalEnv = process.env.NODE_ENV === "development";
 
- if (code) {
- const supabase = await createClient();
- const { error } = await supabase.auth.exchangeCodeForSession(code);
- if (!error) {
- // ?signedIn=1 triggers the "Glad to have you back!" toast on Home —
- // but only for returning users; a first-timer gets redirected to
- // /welcome before ever rendering it, so the toast never fires for them.
- return NextResponse.redirect(`${origin}/?signedIn=1`);
- }
- }
+	let origin = requestUrl.origin;
+	if (forwardedHost && !isLocalEnv) {
+		origin = `https://${forwardedHost}`;
+	}
 
- return NextResponse.redirect(`${origin}/login?error=auth`);
+	if (code) {
+		const supabase = await createClient();
+		const { error } = await supabase.auth.exchangeCodeForSession(code);
+		if (!error) {
+			// ?signedIn=1 triggers the "Glad to have you back!" toast on Home —
+			// but only for returning users; a first-timer gets redirected to
+			// /welcome before ever rendering it, so the toast never fires for them.
+			return NextResponse.redirect(`${origin}/?signedIn=1`);
+		}
+	}
+
+	return NextResponse.redirect(`${origin}/login?error=auth`);
 }
