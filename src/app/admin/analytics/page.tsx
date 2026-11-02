@@ -1,30 +1,31 @@
-import Link from "next/link";
-import { ArrowLeft, BarChart } from "@/components/icons";
-import { adminPill } from "@/components/admin/styles";
-import { getAdminRestaurants, getRestaurantStats } from "@/lib/data/admin";
-import { RestaurantStatsGrid } from "@/components/admin/restaurant-stats";
+import type { Metadata } from "next";
+import { getAnalyticsDashboardData, type DateFilterType } from "@/lib/data/analytics";
+import { AnalyticsView } from "@/components/admin/analytics/analytics-view";
 
-export default async function AdminAnalyticsPage() {
-  const [restaurants, stats] = await Promise.all([
-    getAdminRestaurants(),
-    getRestaurantStats(),
-  ]);
+export const metadata: Metadata = {
+  title: "Orders Analytics · Admin · College Bites",
+  robots: { index: false, follow: false },
+};
 
-  return (
-    <>
-      <div className="mb-4 flex items-center gap-2">
-        <Link href="/admin" className={adminPill}>
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Back
-        </Link>
-      </div>
+export default async function AdminAnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    date?: string;
+    startDate?: string;
+    endDate?: string;
+    restaurant?: string;
+  }>;
+}) {
+  const params = await searchParams;
 
-      <div className="mb-4 flex items-center gap-2">
-        <BarChart className="size-5 text-primary" />
-        <h1 className="font-heading text-headline font-bold">Analytics</h1>
-      </div>
+  const dateFilter = (params.date as DateFilterType) || "today";
+  const analyticsData = await getAnalyticsDashboardData({
+    dateFilter,
+    startDate: params.startDate,
+    endDate: params.endDate,
+    restaurantId: params.restaurant,
+  });
 
-      <RestaurantStatsGrid restaurants={restaurants} stats={stats} />
-    </>
-  );
+  return <AnalyticsView data={analyticsData} />;
 }

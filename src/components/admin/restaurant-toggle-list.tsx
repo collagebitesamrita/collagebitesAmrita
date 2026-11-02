@@ -63,6 +63,7 @@ function RestaurantToggleCard({
  if (result.ok) {
  setActive(next);
  toast.success(`${restaurant.name} is now ${next ? "open" : "closed"}.`);
+        router.refresh();
  } else {
  toast.error(result.error);
  }

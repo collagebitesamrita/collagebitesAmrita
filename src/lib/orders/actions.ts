@@ -10,6 +10,8 @@ import { formatRupees } from "@/lib/format";
 import { formatOrderNumber } from "@/lib/orders/status";
 import { isOfferKey, type OfferKey } from "@/lib/offers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { revalidatePath } from "next/cache";
 
 export type PlaceOrderInput = {
  restaurantId: string;
@@ -206,18 +208,70 @@ export async function cancelMyOrder(orderId: string): Promise<CancelOrderResult>
  }
 
  const supabase = await createClient();
- const { error } = await supabase.rpc("cancel_my_order", { p_order_id: orderId });
 
- if (error) {
-  const key = error.message ?? "";
-  if (key === "not_authenticated") {
+ // 1. Try RPC first if available in database
+ try {
+  const { error: rpcError } = await supabase.rpc("cancel_my_order", { p_order_id: orderId });
+  if (!rpcError) {
+   revalidatePath(`/orders/${orderId}`);
+   revalidatePath("/orders");
+   revalidatePath("/admin");
+   return { ok: true };
+  }
+
+  if (rpcError.message?.includes("not_authenticated")) {
    return { ok: false, error: "Looks like you got signed out. Sign in again." };
   }
-  if (key === "order_not_cancellable") {
-   return { ok: false, error: "This order has already been confirmed by the restaurant and can no longer be cancelled." };
+  if (rpcError.message?.includes("order_not_cancellable")) {
+   return {
+    ok: false,
+    error: "This order has already been confirmed by the restaurant and can no longer be cancelled.",
+   };
   }
+ } catch {
+  // RPC not available or failed; continue to direct secure server fallback
+ }
+
+ // 2. Direct server-side secure validation & update fallback
+ const adminClient = createAdminClient();
+ const client = adminClient ?? supabase;
+
+ const { data: order, error: fetchErr } = await client
+  .from("orders")
+  .select("id, status, user_id")
+  .eq("id", orderId)
+  .maybeSingle();
+
+ if (fetchErr || !order) {
+  return { ok: false, error: "Order not found." };
+ }
+
+ if (order.user_id !== user.id) {
+  return { ok: false, error: "You can only cancel your own orders." };
+ }
+
+ if (order.status !== "pending") {
+  return {
+   ok: false,
+   error: "This order has already been confirmed by the restaurant and can no longer be cancelled.",
+  };
+ }
+
+ const { error: updateErr } = await client
+  .from("orders")
+  .update({ status: "cancelled", updated_at: new Date().toISOString() })
+  .eq("id", orderId)
+  .eq("user_id", user.id)
+  .eq("status", "pending");
+
+ if (updateErr) {
+  console.error("Failed to cancel order:", updateErr);
   return { ok: false, error: "Couldn't cancel the order. Please try again." };
  }
+
+ revalidatePath(`/orders/${orderId}`);
+ revalidatePath("/orders");
+ revalidatePath("/admin");
 
  return { ok: true };
 }

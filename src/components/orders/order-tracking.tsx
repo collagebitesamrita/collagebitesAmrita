@@ -148,6 +148,7 @@ export function OrderTracking({
 		if (result.ok) {
 			toast.success("Order cancelled");
 			setStatus("cancelled");
+			router.refresh();
 		} else {
 			toast.error(result.error);
 		}
@@ -378,7 +379,7 @@ export function OrderTracking({
 						{initialOrder.notes && (
 							<div className="mt-4 rounded-xl bg-secondary px-4 py-3">
 								<p className="text-xs font-medium text-muted-foreground">Note</p>
-								<p className="mt-0.5 text-sm text-foreground">"{initialOrder.notes}"</p>
+								<p className="mt-0.5 text-sm text-foreground">&ldquo;{initialOrder.notes}&rdquo;</p>
 							</div>
 						)}
 

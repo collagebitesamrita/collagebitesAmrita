@@ -9,6 +9,7 @@ import { isOfferKey, type OfferKey } from "@/lib/offers";
 import { formatOrderNumber, nextStatus } from "@/lib/orders/status";
 import { getSessionProfile } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type AdminActionResult = { ok: true } | { ok: false; error: string };
 
@@ -87,12 +88,16 @@ export async function setRestaurantActive(
  const denied = await assertAdmin();
  if (denied) return denied;
 
- const supabase = await createClient();
+ const adminClient = createAdminClient();
+ const supabase = adminClient ?? (await createClient());
  const { error } = await supabase
  .from("restaurants")
  .update({ is_active: active })
  .eq("id", restaurantId);
- if (error) return { ok: false, error: "Couldn't update that restaurant. Please try again." };
+ if (error) {
+ console.error("setRestaurantActive error:", error);
+ return { ok: false, error: error.message || "Couldn't update that restaurant. Please try again." };
+ }
 
  revalidatePath("/admin");
  revalidatePath("/", "layout"); // student home + menu pages also read is_active
@@ -174,7 +179,8 @@ export async function advanceOrderStatus(
  // Auto-advance: confirmed → preparing happens immediately without a separate click
  const targetStatus = currentStatus === "confirmed" ? "preparing" : next;
 
- const supabase = await createClient();
+ const adminClient = createAdminClient();
+ const supabase = adminClient ?? (await createClient());
  const { data, error } = await supabase
  .from("orders")
  .update({ status: targetStatus })
@@ -191,6 +197,8 @@ export async function advanceOrderStatus(
  after(() => notifyUser(supabase, order.user_id, statusPayload(order, targetStatus)));
 
  revalidatePath("/admin");
+ revalidatePath("/orders");
+ revalidatePath(`/orders/${orderId}`);
  return { ok: true };
 }
 
@@ -317,7 +325,8 @@ export async function cancelOrder(orderId: string, currentStatus: OrderStatus): 
  return { ok: false, error: "This order can't be cancelled." };
  }
 
- const supabase = await createClient();
+ const adminClient = createAdminClient();
+ const supabase = adminClient ?? (await createClient());
  const { data, error } = await supabase
  .from("orders")
  .update({ status: "cancelled" })
@@ -334,6 +343,8 @@ export async function cancelOrder(orderId: string, currentStatus: OrderStatus): 
  after(() => notifyUser(supabase, cancelled.user_id, statusPayload(cancelled, "cancelled")));
 
  revalidatePath("/admin");
+ revalidatePath("/orders");
+ revalidatePath(`/orders/${orderId}`);
  return { ok: true };
 }
 

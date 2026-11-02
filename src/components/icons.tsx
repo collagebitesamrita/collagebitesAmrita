@@ -111,6 +111,7 @@ import { SunHorizon as PhSunHorizon } from "@phosphor-icons/react/dist/ssr/SunHo
 import { Timer as PhTimer } from "@phosphor-icons/react/dist/ssr/Timer";
 import { Trash as PhTrash } from "@phosphor-icons/react/dist/ssr/Trash";
 import { Tray as PhTray } from "@phosphor-icons/react/dist/ssr/Tray";
+import { TrendUp as PhTrendUp } from "@phosphor-icons/react/dist/ssr/TrendUp";
 import { Trophy as PhTrophy } from "@phosphor-icons/react/dist/ssr/Trophy";
 import { User as PhUser } from "@phosphor-icons/react/dist/ssr/User";
 import { Users as PhUsers } from "@phosphor-icons/react/dist/ssr/Users";
@@ -324,3 +325,5 @@ export const Heart = make(PhHeart, "Heart");
 export const PencilSimple = make(PhPencilSimple, "PencilSimple");
 /** restaurants admin */
 export const Storefront = make(PhStorefront, "Storefront");
+/** trend up */
+export const TrendUp = make(PhTrendUp, "TrendUp");

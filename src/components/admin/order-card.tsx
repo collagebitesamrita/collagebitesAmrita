@@ -217,9 +217,9 @@ export function OrderActions({
 
  const label = advanceLabel(status);
  const isFinalStep = status === "confirmed"; // → delivered
- // Cancel only exists before confirmation — once an admin confirms with
- // the restaurant, the only path forward is marking it delivered.
- const cancellable = status === "pending";
+ // Cancel is available to admins for any active order (pending, confirmed, etc.)
+ // until it is marked delivered or cancelled.
+ const cancellable = status !== "delivered" && status !== "cancelled";
  // Delete only on terminal orders — active orders would strand the student's
  // live tracking page.
  const deletable = status === "delivered" || status === "cancelled";
